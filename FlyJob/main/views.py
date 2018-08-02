@@ -16,7 +16,7 @@ def index():
 def search_api():
     key = request.form.get('keyword')
     print("---"*10,"searching")
-    cities = [u"北京", u"上海", u"杭州", u"广州", u"深圳"]
+    cities = [u"北京"]
     start.spider_start(key, cities)
     return "ok"
 

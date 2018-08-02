@@ -8,6 +8,7 @@ class DateStore(object):
     HOST = "localhost"
     POST = 27017
     i = 0
+    SAVE_OVER = False
 
     def __init__(self, coll_name):
         self.client = MongoClient(host=self.HOST, port=self.POST)
@@ -23,3 +24,8 @@ class DateStore(object):
             self.coll_job.insert(job)
             # print("save job mongo -------", job)
         print("-------------successful-----------")
+        self.SAVE_OVER = True
+
+    @property
+    def save_result(self):
+        return self.SAVE_OVER

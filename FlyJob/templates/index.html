@@ -22,19 +22,17 @@ text-align: center;">Fly Job</h1>
     <div class="col-md-8">
         <div class="input-group">
             <form method="POST" action="{{ url_for('main.search_api') }}">
-                <input name="keyword" type="text" class="form-control" placeholder="Search for...">
+                <input name="keyword" type="text" class="form-control" placeholder="Search for..."
+                       style="width: 1150px;">
                 <span class="input-group-btn">
-        <button class="btn btn-default" type="submit">Go!</button>
+        <button class="btn btn-default" type="submit" style="width: 76px;">Go!</button>
                 </span>
             </form>
         </div>
     </div><!-- /input-group -->
     <div class="col-md-2"></div>
 </div>
-
-
 </body>
-<script src="{{ url_for('static',filename='js/jquery.min.js')}}"></script>
+<script src="{{ url_for('static',filename='js/jquery.min.js') }}"></script>
 <script src="{{ url_for('static',filename='js/bootstrap.min.js') }}"></script>
-
 </html>
