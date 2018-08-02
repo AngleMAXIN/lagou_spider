@@ -17,13 +17,14 @@ class DateStore(object):
         self.coll_company = self.db[coll_name + '_coll_company']
 
     def let_save(self, com_document, job_document):
+
         for com in com_document:
             self.coll_company.insert(com)
-            # print("save com mongo -------", com)
+            print("save com mongo -------", com)
         for job in job_document:
             self.coll_job.insert(job)
-            # print("save job mongo -------", job)
-        print("-------------successful-----------")
+            print("save job mongo -------", job)
+        # print("-------------successful-----------")
         self.SAVE_OVER = True
 
     @property

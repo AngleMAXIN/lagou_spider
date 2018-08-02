@@ -13,3 +13,5 @@ def spider_start(key_word, cities=None):
     data_api.let_save(small_spider.company_result, small_spider.jobs_result)
     if data_api.save_result:
         print("---" * 10, "ok")
+        return True
+    return False

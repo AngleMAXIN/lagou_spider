@@ -8,11 +8,11 @@ from . import config
 
 
 class Spider(object):
-    count = 0
+    # count = 0
     urls_list = []
     __company_list = []
     __jobs_list = []
-    __page_num = 10
+    __page_num = 5
 
     def __init__(self, keyword=None, cities=None):
         self.keyword = keyword
@@ -44,8 +44,9 @@ class Spider(object):
         #
         # }
         data = {'first': 'true', 'pn': pn, 'kd': self.keyword}
-        result = requests.post(url, data=data, headers=config.headers).json()
+        result = requests.post(url, data=data, headers=config.headers, cookies=config.cookies).json()
         time.sleep(1)
+        # print(result)
         if result['success'] is True:
             self.__data_parser(result)
         else:
@@ -76,8 +77,8 @@ class Spider(object):
                 positionId=i['positionId']
             )
 
-            print("this is ----- {0} ".format(self.count))
-            self.count += 1
+            # print("this is ----- {0} ".format(self.count))
+            # self.count += 1
             self.__company_list.append(comy)
             self.__jobs_list.append(jobs)
 
@@ -94,5 +95,6 @@ class Spider(object):
         # print("----" * 10, 3)
         for url in self.urls_list:
             for pn in range(1, self.__page_num + 1):
+                # print(url,pn)
                 self.__post_index_data(url, pn)
         # print("-------爬取结束------")
