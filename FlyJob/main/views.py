@@ -4,7 +4,7 @@
 from flask import request, render_template
 
 from lagou_spider.FlyJob.main import main
-from lagou_spider.data import start
+from lagou_spider.spider import start
 
 
 @main.route('/')
@@ -15,7 +15,7 @@ def index():
 @main.route('/search', methods=['POST'])
 def search_api():
     key = request.form.get('keyword')
-    print("---"*10,"searching")
+    print("---" * 10, "searching")
     cities = [u"北京"]
     is_ok = start.spider_start(key, cities)
     if is_ok:
@@ -23,5 +23,5 @@ def search_api():
     return "sorry fialed"
 
 
-
-z
+def checke_data(input_key):
+    pass
