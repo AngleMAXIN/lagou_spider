@@ -83,7 +83,7 @@ class Spider(object):
         comy_list = ['financeStage', 'industryField']
         jobs_list = ['positionName', 'firstType',
                      'salary', 'education']
-        if self.cities is None:
+        if self.cities is "全国":
             if self.work_year == "不限":
                 # 全国 经验不限
                 comy_list.append('city')
@@ -109,12 +109,12 @@ class Spider(object):
         comy_list, jobs_list = self.__info_list()
         for r in result:
             comy = {key: r[key] for key in comy_list}
-            jobs = {key: r[key] for key in jobs_list}
-            positionId = r['positionId']
+            # jobs = {key: r[key] for key in jobs_list}
+            # positionId = r['positionId']
 
-            self.__positionId.append(positionId)
+            # self.__positionId.append(positionId)
             self.__company_list.append(comy)
-            self.__jobs_list.append(jobs)
+            # self.__jobs_list.append(jobs)
 
     @property
     def company_result(self):
@@ -128,15 +128,21 @@ class Spider(object):
     def job_requests_list(self):
         return self.__positionresult
 
-    def start(self):
-        self.__init_url()
-        # print("----" * 10, 3)
-        for url in self.urls_list:
-            for pn in range(1, self.__page_num + 1):
-                print("----" * 10, url, pn)
-                self.__post_index_data(url, pn)
-        # print("-------爬取结束------")
+    def get_postId_data(self):
+
         for post_id in self.__positionId:
             print("---" * 10, post_id)
             info = self.__get_detail_data(post_id)
             self.__positionresult.append(info)
+
+    def get_urlList_data(self):
+
+        for url in self.urls_list:
+            for pn in range(1, self.__page_num + 1):
+                print("----" * 10, url, pn)
+                self.__post_index_data(url, pn)
+
+    def start(self):
+        self.__init_url()
+        self.get_urlList_data()
+        # self.get_postId_data()

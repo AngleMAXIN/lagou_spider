@@ -30,7 +30,7 @@ from lagou_spider.spider.start import spider_start
 #         print(comy)
 
 if __name__ == '__main__':
-    keyword = "Go"
+    keyword = "php"
     cities = "全国"
     workyear = "不限"
     cities_list = cities.split(" ")

@@ -30,16 +30,22 @@ class DateStore(object):
         self.coll_keywords.insert(keyword)
 
     def __save_com(self, com_doc):
+        if len(com_doc) == 0:
+            return False
         for com in com_doc:
             self.coll_company.insert(com)
             print("com")
 
     def __save_job(self, job_doc):
+        if len(job_doc) == 0:
+            return False
         for job in job_doc:
             self.coll_job.insert(job)
             print("job")
 
     def __save_requests(self, request_doc):
+        if len(request_doc) == 0:
+            return False
         for req in request_doc:
             self.coll_requests.insert(req)
             print("req")
