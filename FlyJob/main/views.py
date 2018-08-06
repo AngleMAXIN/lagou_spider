@@ -1,10 +1,11 @@
 # !/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-from flask import request, render_template
+from flask import request, render_template, redirect, url_for
 
 from lagou_spider.FlyJob.main import main
 from lagou_spider.spider import start
+from .show import salary_show
 
 
 @main.route('/')
@@ -19,9 +20,16 @@ def search_api():
     cities = [u"北京"]
     is_ok = start.spider_start(key, cities)
     if is_ok:
-        return "ok"
+        return redirect(url_for('main.data_show'))
     return "sorry fialed"
 
 
-def checke_data(input_key):
-    pass
+@main.route('/datashow')
+def data_show():
+    salary_bar = salary_show()
+    content = {
+        "salary_bar": salary_bar.render_embed()
+
+    }
+    return render_template('result.html', **content)
+
