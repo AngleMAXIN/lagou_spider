@@ -5,7 +5,8 @@ from flask import Flask
 
 
 def register_app(app):
-    from ..FlyJob.main import main as main_blueprint
+
+    from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
     return app
 

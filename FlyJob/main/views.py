@@ -3,9 +3,11 @@
 
 from flask import request, render_template, redirect, url_for
 
-from lagou_spider.FlyJob.main import main
-from lagou_spider.spider import start
-from .show import salary_show, work_year_show
+from ..main import main
+from .show import (salary_show, 
+                    work_year_show, 
+                    education_show, 
+                    district_show)
 
 
 @main.route('/')
@@ -26,12 +28,11 @@ def search_api():
 
 @main.route('/datashow')
 def data_show():
-    salary_bar = salary_show()
-    work_year_pie = work_year_show()
+    render_list = [salary_show(), work_year_show(), 
+                    education_show(),district_show()]  
+
     content = {
-        "salary_bar": salary_bar.render_embed(),
-        "work_year_show": work_year_pie.render_embed()
+        "render_list":render_list
 
     }
     return render_template('result.html', **content)
-

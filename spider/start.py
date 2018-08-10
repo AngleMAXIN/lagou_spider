@@ -1,9 +1,8 @@
 # !/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-from lagou_spider.spider import dataapi
-from lagou_spider.spider import spider
-
+# from ..spider import spider, dataapi
+from spider import spider, dataapi
 
 def spider_start(key_word, cities=None, work_year=None):
     print("----" * 10, 2)
