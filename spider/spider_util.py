@@ -2,27 +2,28 @@
 # -*- coding:utf-8 -*-
 
 import time
-
+import random
 import requests
-
-from . import config
+from spider import config
 from lxml import etree
 
 
 class Spider(object):
     # count = 0
-    __page_num = 2
+    __page_num = 30
     urls_list = []
     __company_list = []
     __jobs_list = []
     __positionId = []
-    __positionresult = []
-    spider_live = True
+    __position_result = []
+    SLEEP_TIME = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-    def __init__(self, keyword=None, cities=None, workyear=None):
+    # spider_live = True
+
+    def __init__(self, keyword=None, cities=None, work_year=''):
         self.keyword = keyword
         self.cities = cities
-        self.work_year = workyear
+        self.work_year = work_year
 
     def __post_index_data(self, url=None, pn=None):
         """
@@ -35,7 +36,8 @@ class Spider(object):
             result = requests.post(
                 url, data=data, headers=config.get_header()).json()
             OVER -= 1
-            time.sleep(2)
+
+            time.sleep(random.choice(self.SLEEP_TIME))
             if result['success'] is True:
                 self.__data_parser(result)
                 break
@@ -52,9 +54,7 @@ class Spider(object):
             selector = etree.HTML(result.text)
             r = selector.xpath('//*[@id="job_detail"]/dd[2]/div/p/text()')
             requests_list = dict(data=r)
-
             return requests_list
-
         return None
 
     def __init_url(self):
@@ -63,38 +63,43 @@ class Spider(object):
         如果有,就具体构造出请求的url
         """
         if self.cities[0] == "全国":
-            url = "https://www.lagou.com/jobs/positionAjax.json? \
-                                            px=default"
+            if self.work_year == '':
+                url = "https://www.lagou.com/jobs/positionAjax.json? \
+                        px=default"
+            else:
+                url = "https://www.lagou.com/jobs/positionAjax.json? \
+                        px=default&gx={0}&isSchoolJob=1".format(self.work_year)
             self.urls_list.append(url)
         else:
             for city in self.cities:
-                if self.work_year is "不限":
+                if self.work_year == '':
                     url = "https://www.lagou.com/jobs/positionAjax.json? \
                             px=default&city={0}".format(city)
                 else:
                     url = "https://www.lagou.com/jobs/positionAjax.json? \
-                    px=default&gx={0}ity={1}isSchoolJob=1".format(self.work_year, city)
+                    px=default&gx={0}city={1}&isSchoolJob=1".format(self.work_year, city)
                 self.urls_list.append(url)
 
     def __info_list(self):
-        """"""
+
         comy_list = ['financeStage', 'industryField']
         jobs_list = ['positionName', 'firstType',
                      'salary', 'education']
-        print("-----",self.work_year,self.cities)
+        # print(self.cities[0], self.work_year)
+
         if self.cities[0] == "全国":
-            if self.work_year == "不限":
+            if self.work_year == '':
                 # 全国 经验不限
-                print("全国 经验不限")
+                # print("全国 经验不限")
                 comy_list.append('city')
                 jobs_list.append('workYear')
             else:
                 # 全国 应届或实习
-                print("全国 应届或实习")
+                # print("全国 应届或实习")
                 comy_list.append('city')
 
         else:
-            if self.work_year == "不限":
+            if self.work_year == '':
                 # 指定地区 经验不限
                 jobs_list.append('workYear')
             # else:
@@ -117,23 +122,22 @@ class Spider(object):
             self.__company_list.append(comy)
             self.__jobs_list.append(jobs)
 
-    def get_postId_data(self):
-
+    def get_post_id_data(self):
         for post_id in self.__positionId:
             print("---" * 10, post_id)
             info = self.__get_detail_data(post_id)
-            self.__positionresult.append(info)
+            self.__position_result.append(info)
 
     def get_urls_data(self):
         for url in self.urls_list:
             for pn in range(1, self.__page_num + 1):
-                print("----" * 10, url, pn)
+                print(url, pn)
                 self.__post_index_data(url, pn)
 
     def start(self):
         self.__init_url()
         self.get_urls_data()
-        self.get_postId_data()
+        self.get_post_id_data()
 
     @property
     def company_result(self):
@@ -145,6 +149,4 @@ class Spider(object):
 
     @property
     def job_requests_list(self):
-        return self.__positionresult
-
-    
+        return self.__position_result

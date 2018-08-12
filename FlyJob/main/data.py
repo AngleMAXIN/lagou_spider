@@ -1,6 +1,8 @@
 # !/usr/bin/env python
 # -*- coding:utf-8 -*-
 
+import jieba
+
 from pymongo import MongoClient
 
 from collections import Counter
@@ -11,15 +13,17 @@ class GetData(object):
     __work_year = []
     __education = []
     __district = []
+    __req_data = []
     __comp_keys = ['city']
     __jobs_keys = ['salary', 'workYear', 'education']
 
-    def __init__(self):
+    def __init__(self, keyword):
         MONGO_URL = '127.0.0.1:27017'
         client = MongoClient(MONGO_URL)
         self.db = client['job_info']
-        self.colle = self.db['golang_coll_job']
-        self.colle_com = self.db['golang_coll_company']
+        self.colle = self.db[keyword + '_coll_job']
+        self.colle_com = self.db[keyword + '_coll_company']
+        self.colle_req = self.db[keyword + '_coll_requests']
 
     def filed_api(self, filed_list):
         for filed in filed_list:
@@ -27,24 +31,28 @@ class GetData(object):
 
     def __get_data(self, key):
         filed = {'_id': False, key: True}
-        collect = None
+        # collect = None
         if key in self.__comp_keys:
             collect = self.colle_com
         elif key in self.__jobs_keys:
             collect = self.colle
+        else:
+            collect = self.colle_req
+        # print("-------------------",key)
         result_list = collect.find(projection=filed)
+        if key == 'data':
+            return self._words_collcet(result_list)
         result = []
         for i in result_list:
             try:
                 result.append(i[key])
-            except Exception as e:
+            except KeyError:
                 pass
         return result
 
     def __count_data(self, data=None, filed=None):
         count_min = 0
         data_dict = Counter(data)
-        # print(data_dict.most_common())
         if filed == 'salary':
             for value in data_dict.values():
                 if value < 5:
@@ -56,6 +64,19 @@ class GetData(object):
             self.__education = data_dict
         elif filed == 'city':
             self.__district = data_dict
+        elif filed == 'data':
+            self.__req_data = list(filter(self.__filter_bed_words, data_dict.most_common(50)))
+
+    def _words_collcet(self, word_result):
+        word_string = ''
+        for d in word_result:
+            word_string += ''.join(d['data'])
+        result = [w for w in jieba.cut(word_string, cut_all=True) if len(w) >= 3]
+        return result
+
+    def __filter_bed_words(self, d):
+        words = ['岗位职责', '熟练掌握', '解决方案', '以上学历', '岗位要求']
+        return d[0] not in words
 
     @property
     def salary_data(self):
@@ -73,3 +94,7 @@ class GetData(object):
     def district_data(self):
         # print("---"*10,self.__district)
         return self.__district
+
+    @property
+    def requests_data(self):
+        return self.__req_data

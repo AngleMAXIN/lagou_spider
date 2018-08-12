@@ -4,10 +4,7 @@
 from flask import request, render_template, redirect, url_for
 
 from ..main import main
-from .show import (salary_show, 
-                    work_year_show, 
-                    education_show, 
-                    district_show)
+from .show import EchartsApi
 
 
 @main.route('/')
@@ -26,13 +23,14 @@ def search_api():
     # return "sorry fialed"
 
 
-@main.route('/datashow')
+@main.route('/data_show')
 def data_show():
-    render_list = [salary_show(), work_year_show(), 
-                    education_show(),district_show()]  
-
+    key_words = ['salary', 'workYear', 'education', 'city', 'data']
+    key = 'docker'
+    echarts = EchartsApi(key_words,key)
+    render_list = echarts.echarts_list
     content = {
-        "render_list":render_list
+        "render_list": render_list
 
     }
     return render_template('result.html', **content)
