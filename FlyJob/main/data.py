@@ -7,6 +7,27 @@ from pymongo import MongoClient
 
 from collections import Counter
 
+MONGO_URL = '127.0.0.1:27017'
+
+
+def keywords():
+
+    client = MongoClient(MONGO_URL)
+    db_keys = client['keyword_list']
+    colle_keyword = db_keys['coll_keyword']
+    filed = {
+        '_id': False,
+        "keyword": True,
+        "city": True,
+        "workyear": True
+    }
+    result = colle_keyword.find(projection=filed)
+    keywords = []
+    for key in result:
+        keywords.append([key['keyword'],key['city'],key['workyear']])
+
+    return keywords
+
 
 class GetData(object):
 
@@ -16,13 +37,14 @@ class GetData(object):
     __education = []
     __district = []
     __req_data = []
+    __keywords = []
     __comp_keys = ['city']
     __jobs_keys = ['salary', 'workYear', 'education']
     words = ['岗位职责', '熟练掌握', '解决方案', '以上学历', '岗位要求']
 
     def __init__(self, keyword):
-        MONGO_URL = '127.0.0.1:27017'
         client = MongoClient(MONGO_URL)
+
         self.db = client['job_info']
         self.colle = self.db[keyword + '_coll_job']
         self.colle_com = self.db[keyword + '_coll_company']
@@ -34,14 +56,12 @@ class GetData(object):
 
     def __get_data(self, key):
         filed = {'_id': False, key: True}
-        # collect = None
         if key in self.__comp_keys:
             collect = self.colle_com
         elif key in self.__jobs_keys:
             collect = self.colle
         else:
             collect = self.colle_req
-        # print("-------------------",key)
         result_list = collect.find(projection=filed)
         if key == 'data':
             return self._words_collcet(result_list)

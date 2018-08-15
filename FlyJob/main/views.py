@@ -5,11 +5,16 @@ from flask import request, render_template, redirect, url_for
 
 from ..main import main
 from .show import EchartsApi
+from .data import keywords
 
 
 @main.route('/')
 def index():
-    return render_template('index.html')
+
+    context  = {
+        "keyword_list": keywords()
+    }
+    return render_template('index.html', **context)
 
 
 @main.route('/search', methods=['POST'])
@@ -26,10 +31,11 @@ def search_api():
 @main.route('/data_show')
 def data_show():
     key_words = ['salary', 'workYear', 'education', 'city', 'data']
-    key = 'C++'
-    echarts = EchartsApi(key_words,key)
+    key = 'golang'
+    echarts = EchartsApi(key_words, key)
     render_list = echarts.echarts_list
     content = {
+        "keyword": key,
         "render_list": render_list
 
     }
