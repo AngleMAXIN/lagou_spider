@@ -26,7 +26,7 @@ def search_api():
 @main.route('/data_show')
 def data_show():
     key_words = ['salary', 'workYear', 'education', 'city', 'data']
-    key = 'docker'
+    key = 'C++'
     echarts = EchartsApi(key_words,key)
     render_list = echarts.echarts_list
     content = {

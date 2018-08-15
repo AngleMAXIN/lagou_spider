@@ -13,8 +13,12 @@ class EchartsApi(object):
 
     def choice_show_api(self):
         show_dict = [
-            self._salary_show(), self._city_show(),
-            self._requests_show()]
+            self._salary_show(),
+            self._work_year_show(),
+            self._education_show(),
+            self._city_show(),
+            self._requests_show()
+        ]
         return show_dict
 
     def _salary_show(self):
@@ -49,10 +53,11 @@ class EchartsApi(object):
         return geo.render_embed()
 
     def _requests_show(self):
-        word_cloud = WordCloud("技能要求云图", width=1300, height=620,title_pos='center')
+        word_cloud = WordCloud("技能要求云图", width=1300,
+                               height=620, title_pos='center')
         attr, value = word_cloud.cast(self.g.requests_data)
-        print("----show", len(attr), len(value))
-        word_cloud.add("", attr, value, word_size_range=[20, 100],shape='diamond')
+        word_cloud.add("", attr, value, word_size_range=[
+                       20, 100], shape='diamond')
         return word_cloud.render_embed()
 
     @property

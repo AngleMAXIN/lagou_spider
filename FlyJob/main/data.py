@@ -9,6 +9,8 @@ from collections import Counter
 
 
 class GetData(object):
+
+    word_string = ''
     __salary = []
     __work_year = []
     __education = []
@@ -16,6 +18,7 @@ class GetData(object):
     __req_data = []
     __comp_keys = ['city']
     __jobs_keys = ['salary', 'workYear', 'education']
+    words = ['岗位职责', '熟练掌握', '解决方案', '以上学历', '岗位要求']
 
     def __init__(self, keyword):
         MONGO_URL = '127.0.0.1:27017'
@@ -65,18 +68,20 @@ class GetData(object):
         elif filed == 'city':
             self.__district = data_dict
         elif filed == 'data':
-            self.__req_data = list(filter(self.__filter_bed_words, data_dict.most_common(50)))
+            self.__req_data = list(filter(
+                self.__filter_bed_words,
+                data_dict.most_common(50))
+            )
 
     def _words_collcet(self, word_result):
-        word_string = ''
         for d in word_result:
-            word_string += ''.join(d['data'])
-        result = [w for w in jieba.cut(word_string, cut_all=True) if len(w) >= 3]
+            self.word_string += ''.join(d['data'])
+        result = [w for w in jieba.cut(
+            self.word_string, cut_all=True) if len(w) >= 3]
         return result
 
     def __filter_bed_words(self, d):
-        words = ['岗位职责', '熟练掌握', '解决方案', '以上学历', '岗位要求']
-        return d[0] not in words
+        return d[0] not in self.words
 
     @property
     def salary_data(self):
@@ -92,7 +97,6 @@ class GetData(object):
 
     @property
     def district_data(self):
-        # print("---"*10,self.__district)
         return self.__district
 
     @property

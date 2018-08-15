@@ -9,14 +9,13 @@ from lxml import etree
 
 
 class Spider(object):
-    # count = 0
     __page_num = 30
     urls_list = []
     __company_list = []
     __jobs_list = []
     __positionId = []
     __position_result = []
-    SLEEP_TIME = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    SLEEP_TIME = [1, 2, 14, 4, 5, 5.5, 11, 8, 11, 10, 9, 7, 6]
 
     # spider_live = True
 
@@ -123,8 +122,11 @@ class Spider(object):
             self.__jobs_list.append(jobs)
 
     def get_post_id_data(self):
+        posts_len = len(self.__positionId)
+        i = 1
         for post_id in self.__positionId:
-            print("---" * 10, post_id)
+            print("had download  {:.2%}".format(i / posts_len), end="\r")
+            i += 1
             info = self.__get_detail_data(post_id)
             self.__position_result.append(info)
 

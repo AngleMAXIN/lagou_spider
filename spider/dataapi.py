@@ -8,31 +8,34 @@ class DateStore(object):
     PORT = 27017
     SAVE_OVER = False
     KET_WORDS_DB = 'keyword_list'
+    KET_WORDS_COLL = 'coll_keyword'
     DB = 'job_info'
 
     def __init__(self, coll_name, gx='', cities=None):
         self.coll_name = coll_name
         self.workyear = gx
+        self.cities = cities
 
         self.client = MongoClient(host=self.HOST, port=self.PORT)
         self.keyword_db = self.client[self.KET_WORDS_DB]
-        self.coll_keywords = self.keyword_db['coll_keywords']
+        self.coll_keywords = self.keyword_db[self.KET_WORDS_COLL]
         self.db = self.client[self.DB]
         self.coll_job = self.db[gx + coll_name + '_coll_job']
         self.coll_company = self.db[gx + coll_name + '_coll_company']
         self.coll_requests = self.db[gx + coll_name + '_coll_requests']
-        # self.test_company = self.db['test_coll_company']
+        self.test_company = self.db['test_coll_company']
         self.__save_keywords()
 
     def __save_keywords(self):
         keyword = {
             "keyword": self.coll_name,
+            "city": self.cities,
             "workyear": self.workyear
         }
-        if self.coll_keywords.find(keyword):
-            return 
-        else:
-            self.coll_keywords.insert(keyword)
+        self.coll_keywords.insert(keyword)
+
+    def sava_keyword_api(self):
+        self.__save_keywords()
 
     def __save_com(self, com_doc):
         if len(com_doc) == 0:
@@ -69,3 +72,11 @@ class DateStore(object):
     def save_result(self):
         return self.SAVE_OVER
 
+
+if __name__ == '__main__':
+    key  = ['python', 'java', "C++","PHP", "docker","golang","web前端"]
+    city = "全国"
+    gx = "不限"
+    for k in key:
+        ex = DateStore(k,gx,city)
+        

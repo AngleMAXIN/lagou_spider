@@ -23,7 +23,7 @@ def spider_start(key_word=None, cities=None, work_year=''):
 
 
 if __name__ == '__main__':
-    keyword = "docker"
+    keyword = "数据挖掘"
     cities = "全国"
     workyear = ''
     cities_list = cities.split(" ")
