@@ -125,10 +125,11 @@ class Spider(object):
         posts_len = len(self.__positionId)
         i = 1
         for post_id in self.__positionId:
-            print("had download  {:.2%}".format(i / posts_len), end="\r")
             i += 1
             info = self.__get_detail_data(post_id)
             self.__position_result.append(info)
+            print("had download  {:.2%}".format(i / posts_len))
+
 
     def get_urls_data(self):
         for url in self.urls_list:

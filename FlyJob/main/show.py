@@ -21,6 +21,11 @@ class EchartsApi(object):
         ]
         return show_dict
 
+    @property
+    def echarts_list(self):
+        self.g.filed_api(self.key_list)
+        return self.choice_show_api()
+        
     def _salary_show(self):
         bar = Bar("薪资统计", title_pos='center', width=1200, height=500)
         attr, value = bar.cast(self.g.salary_data)
@@ -60,7 +65,4 @@ class EchartsApi(object):
                        20, 100], shape='diamond')
         return word_cloud.render_embed()
 
-    @property
-    def echarts_list(self):
-        self.g.filed_api(self.key_list)
-        return self.choice_show_api()
+    

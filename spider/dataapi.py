@@ -23,7 +23,6 @@ class DateStore(object):
         self.coll_job = self.db[gx + coll_name + '_coll_job']
         self.coll_company = self.db[gx + coll_name + '_coll_company']
         self.coll_requests = self.db[gx + coll_name + '_coll_requests']
-        self.test_company = self.db['test_coll_company']
         self.__save_keywords()
 
     def __save_keywords(self):
