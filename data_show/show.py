@@ -2,14 +2,14 @@
 # -*- coding:utf-8 -*-
 
 from pyecharts import Bar, Pie, Geo, WordCloud
-from .data import GetData
+from data_show.data import GetData
 
 
 class EchartsApi(object):
 
     def __init__(self, key_list, keyword):
         self.key_list = key_list
-        self.g = GetData(keyword)
+        self.g = GetData(keyword,key_list)
 
     def choice_show_api(self):
         show_dict = [
@@ -23,7 +23,6 @@ class EchartsApi(object):
 
     @property
     def echarts_list(self):
-        self.g.filed_api(self.key_list)
         return self.choice_show_api()
         
     def _salary_show(self):

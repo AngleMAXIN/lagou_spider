@@ -1,17 +1,17 @@
 # !/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-from flask import request, render_template, redirect, url_for
+from flask import render_template
 
 from ..main import main
-from .show import EchartsApi
-from .data import keywords
+from data_show.show import EchartsApi
+from data_show.data import keywords
 
 
 @main.route('/')
 def index():
 
-    context  = {
+    context = {
         "keyword_list": keywords()
     }
     return render_template('index.html', **context)
@@ -34,6 +34,7 @@ def data_show(keyword):
     # print(keyword)
     echarts = EchartsApi(key_words, keyword)
     render_list = echarts.echarts_list
+    # print("---------",render_list)
     content = {
         "keyword": keyword,
         "render_list": render_list

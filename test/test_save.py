@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # -*- coding:utf-8 -*-
 import jieba
-from FlyJob.main.data import GetData
+from data_show.data import GetData
 from collections import Counter
 
 def main():

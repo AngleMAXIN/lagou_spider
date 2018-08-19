@@ -2,6 +2,8 @@
 # -*- coding:utf-8 -*-
 
 import jieba
+import time
+import json
 
 from pymongo import MongoClient
 
@@ -11,7 +13,6 @@ MONGO_URL = '127.0.0.1:27017'
 
 
 def keywords():
-
     client = MongoClient(MONGO_URL)
     db_keys = client['keyword_list']
     colle_keyword = db_keys['coll_keyword']
@@ -22,15 +23,14 @@ def keywords():
         "workyear": True
     }
     result = colle_keyword.find(projection=filed)
-    keywords = []
+    key_words = list()
     for key in result:
-        keywords.append([key['keyword'],key['city'],key['workyear']])
+        key_words.append([key['keyword'], key['city'], key['workyear']])
 
-    return keywords
+    return key_words
 
 
 class GetData(object):
-
     word_string = ''
     __salary = []
     __work_year = []
@@ -38,21 +38,73 @@ class GetData(object):
     __district = []
     __req_data = []
     __keywords = []
+    KET_WORDS_DB = 'keyword_list'
+    KET_WORDS_COLL = 'coll_keyword'
+    FILE_NAME = "keyword.json"
     __comp_keys = ['city']
     __jobs_keys = ['salary', 'workYear', 'education']
-    words = ['岗位职责', '熟练掌握', '解决方案', '以上学历', '岗位要求']
+    words = ['岗位职责', '熟练掌握', '解决方案', '以上学历', '岗位要求','计算机相关'
+             'java', 'Java', 'python', 'Python', 'C++', 'PHP', 'c++','计算机','软件开发','Docker','docker']
 
-    def __init__(self, keyword):
+    def __init__(self, keyword, filed_list):
+        self.keyword = keyword
+        self.filed_list = filed_list
+
         client = MongoClient(MONGO_URL)
+        self.db = client[self.KET_WORDS_DB]
+        self.coll_key = self.db[self.KET_WORDS_COLL]
 
-        self.db = client['job_info']
-        self.colle = self.db[keyword + '_coll_job']
-        self.colle_com = self.db[keyword + '_coll_company']
-        self.colle_req = self.db[keyword + '_coll_requests']
+        if not self.__check_key_exit():
+            self.keyword_json = {}
+            self.db = client['job_info']
+            self.colle = self.db[keyword + '_coll_job']
+            self.colle_com = self.db[keyword + '_coll_company']
+            self.colle_req = self.db[keyword + '_coll_requests']
+            self._filed_api()
+            self._write_json_to_file()
 
-    def filed_api(self, filed_list):
-        for filed in filed_list:
+    def _filed_api(self):
+        for filed in self.filed_list:
             self.__count_data(self.__get_data(filed), filed)
+
+    def _write_json_to_file(self):
+        self.keyword_json = {
+            "keyword": self.keyword,
+            "time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+            "salary_data": self.__salary,
+            "work_year": self.__work_year,
+            "education": self.__education,
+            "city": self.__district,
+            "requests": self.__req_data
+        }
+        self.__openfile("a+")
+
+    def __openfile(self, open_model):
+        with open(self.FILE_NAME, open_model, encoding="utf-8") as f:
+            if open_model == "a+":
+                f.write(json.dumps(self.keyword_json, sort_keys=True) + '\n')
+                # f.write(strself.keyword_json)
+            else:
+                result = f.readlines()
+                if len(result) == 0:
+                    print("======")
+                    return False
+                for line in result:
+                    result = json.loads(line)
+                    if result['keyword'] == self.keyword:
+                        self.__salary = [tuple(r) for r in result['salary_data']]
+                        self.__work_year = result['work_year']
+                        self.__education = result['education']
+                        self.__district = result['city']
+                        self.__req_data = [tuple(r) for r in result['requests']]
+                        return True
+                return False
+
+    def __check_key_exit(self):
+
+        if self.__openfile("r"):
+            return True
+        return False
 
     def __get_data(self, key):
         filed = {'_id': False, key: True}
@@ -90,7 +142,7 @@ class GetData(object):
         elif filed == 'data':
             self.__req_data = list(filter(
                 self.__filter_bed_words,
-                data_dict.most_common(50))
+                data_dict.most_common(60))
             )
 
     def _words_collcet(self, word_result):
