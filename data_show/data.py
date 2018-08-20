@@ -4,10 +4,11 @@
 import jieba
 import time
 import json
+import redis
 
 from pymongo import MongoClient
 
-from collections import Counter
+from collections import Counter, OrderedDict
 
 MONGO_URL = '127.0.0.1:27017'
 
@@ -54,6 +55,9 @@ class GetData(object):
         self.db = client[self.KET_WORDS_DB]
         self.coll_key = self.db[self.KET_WORDS_COLL]
 
+        pool = redis.ConnectionPool(host='localhost', port=6379, decode_responses=True)
+        self.rds = redis.Redis(connection_pool=pool)        
+
         if not self.__check_key_exit():
             self.keyword_json = {}
             self.db = client['job_info']
@@ -62,6 +66,8 @@ class GetData(object):
             self.colle_req = self.db[keyword + '_coll_requests']
             self._filed_api()
             self._write_json_to_file()
+        
+
 
     def _filed_api(self):
         for filed in self.filed_list:
@@ -77,7 +83,36 @@ class GetData(object):
             "city": self.__district,
             "requests": self.__req_data
         }
-        self.__openfile("a+")
+        # self.__openfile("a+")
+        self._save_to_redis()
+
+    def __check_key_exit(self):
+
+        # if self.__openfile("r"):
+        #     return True
+        # return False    
+        
+        result = self.rds.get(self.keyword)
+        if result:
+            self.__get_from_io(json.loads(result))
+
+            return True
+        return False
+
+    def _save_to_redis(self):
+        try:
+            self.rds.set(self.keyword, json.dumps(self.keyword_json))
+            return True
+        except Exception as e:
+            return False
+    
+    def __get_from_io(self,result):
+        self.__salary = [tuple(r) for r in result['salary_data']]
+        self.__work_year = result['work_year']
+        self.__education = result['education']
+        self.__district = result['city']
+        self.__req_data = [tuple(r) for r in result['requests']]
+        return True
 
     def __openfile(self, open_model):
         with open(self.FILE_NAME, open_model, encoding="utf-8") as f:
@@ -87,24 +122,13 @@ class GetData(object):
             else:
                 result = f.readlines()
                 if len(result) == 0:
-                    print("======")
                     return False
                 for line in result:
                     result = json.loads(line)
                     if result['keyword'] == self.keyword:
-                        self.__salary = [tuple(r) for r in result['salary_data']]
-                        self.__work_year = result['work_year']
-                        self.__education = result['education']
-                        self.__district = result['city']
-                        self.__req_data = [tuple(r) for r in result['requests']]
+                        self.__get_from_io(result)
                         return True
                 return False
-
-    def __check_key_exit(self):
-
-        if self.__openfile("r"):
-            return True
-        return False
 
     def __get_data(self, key):
         filed = {'_id': False, key: True}

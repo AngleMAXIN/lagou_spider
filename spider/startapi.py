@@ -23,7 +23,7 @@ def spider_start(key_word=None, cities=None, work_year=''):
 
 
 if __name__ == '__main__':
-    keyword = "java 实习"
+    keyword = "运维"
     cities = "全国"
     workyear = ''
     cities_list = cities.split(" ")
