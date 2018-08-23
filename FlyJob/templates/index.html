@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <title>Fly Job</title>
     <link rel="stylesheet" href="{{ url_for('static',filename='css/bootstrap.min.css') }}">
+    <style type="text/css">
+        @font-face {
+            font-family: RBNo;
+            /*src:url("{{ url_for('static', filename='font/Merriweather-Bold.ttf') }}" )*/
+            /*src:url("{{ url_for('static', filename='font/Merriweather-Bold.ttf') }}" )*/
+            src:url("{{ url_for('static', filename='font/Anonymous_Pro_B.woff.ttf') }}" )
+
+        }
+    #key, li, p ,h1, button{ 
+        font-family: RBNo;
+    }
+    </style>
 </head>
 <body>
 <div class="row">
@@ -20,15 +32,62 @@ text-align: center;">Fly Job</h1>
 <div class="row">
     <div class="col-md-2"></div>
     <div class="col-md-8">
-    {% for keyword in keyword_list %}
-        <p>
-            <a href="{{ url_for('main.data_show', keyword=keyword[0]) }}">
-                <button type="button" class="btn btn-info">{{ keyword[0]}} {{ keyword[1]}} {{ keyword[2]}}</button>
-            </a>
-        </p>
-    {% endfor %}
-    <div class="col-md-2"></div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <caption style="text-align: center;">
+                <h3>KeyWord List</h3>
+                </caption>
+
+                <thead>
+                  <tr>
+                    <th>keyword</th>
+                    <th>area</th>
+                    <th>wordyear</th>
+                    <th>Let's go</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for keyword in keyword_list %}
+                    <tr>
+                        <td id="key">{{ keyword[0]}}</td>
+                        <td>{{ keyword[1]}}</td>
+                        <td>{{ keyword[2]}}</td>
+                        <td>
+                            <a href="{{ url_for('main.data_show', keyword=keyword[0]) }}">
+                                <button type="button" class="btn btn-info">Go View</button>
+                            </a>
+                        </td>
+                    </tr>        
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="page-header">
+        <ul class="list-group">
+            <li> 
+                <h3 id="text"> the dome source code in 
+                <a href="https://github.com/AngleMAXIN/lagou_spider">here</a> 
+                </h3>
+            </li>
+            <li>
+                <h3>If there is no suitable option or better idea, please leave a message and we will provide it to you</h3>
+            </li>
+            <li> 
+                <h3>
+                    <a href="https://github.com/AngleMAXIN/lagou_spider/issues">Leave a message</a>
+                </h3>
+            </li>
+        </ul>
+        </div>
+        <footer style="text-align: center;">
+            @ 2018 All interpretation rights belong to me
+        </footer>
+
 </div>
+    <div class="col-md-2"></div>
+    
 </body>
 <script src="{{ url_for('static',filename='js/jquery.min.js') }}"></script>
 <script src="{{ url_for('static',filename='js/bootstrap.min.js') }}"></script>

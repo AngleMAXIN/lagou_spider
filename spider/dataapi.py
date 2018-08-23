@@ -1,7 +1,9 @@
 # !/usr/bin/env python# -*- coding:utf-8 -*-
 import gevent
+from gevent import monkey
 from pymongo import MongoClient
 
+monkey.patch_all()
 
 class DateStore(object):
     HOST = "localhost"
@@ -16,7 +18,7 @@ class DateStore(object):
         self.workyear = gx
         self.cities = cities
 
-        self.client = MongoClient(host=self.HOST, port=self.PORT)
+        self.client = MongoClient(host=self.HOST, port=self.PORT, use_greenlets=True)
         self.keyword_db = self.client[self.KET_WORDS_DB]
         self.coll_keywords = self.keyword_db[self.KET_WORDS_COLL]
         self.db = self.client[self.DB]
@@ -63,7 +65,7 @@ class DateStore(object):
                 gevent.spawn(self.__save_requests, request_doc)
         ])
         except Exception as e:
-            raise
+            raise e
         else:
             self.SAVE_OVER = True
         
@@ -71,11 +73,11 @@ class DateStore(object):
     def save_result(self):
         return self.SAVE_OVER
 
-
-if __name__ == '__main__':
-    key  = ['python', 'java', "C++","PHP", "docker","golang","web前端"]
-    city = "全国"
-    gx = "不限"
-    for k in key:
-        ex = DateStore(k,gx,city)
+#
+# if __name__ == '__main__':
+#     key = ['python', 'java', "C++","PHP", "docker","golang","web前端"]
+#     city = "全国"
+#     gx = "不限"
+#     for k in key:
+#         ex = DateStore(k,gx,city)
         

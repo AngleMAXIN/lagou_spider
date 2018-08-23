@@ -4,6 +4,3 @@
 
 from .dataapi import DateStore
 from .spider_util import Spider
-
-# from spider.spider_util import Spider
-# from spider.dataapi import DateStore

@@ -44,8 +44,8 @@ class GetData(object):
     FILE_NAME = "keyword.json"
     __comp_keys = ['city']
     __jobs_keys = ['salary', 'workYear', 'education']
-    words = ['岗位职责', '熟练掌握', '解决方案', '以上学历', '岗位要求','计算机相关'
-             'java', 'Java', 'python', 'Python', 'C++', 'PHP', 'c++','计算机','软件开发','Docker','docker']
+    words = ['岗位职责', '熟练掌握', '解决方案', '以上学历', '岗位要求', '计算机相关'
+             'java', 'Java', 'python', 'Python', 'C++', 'PHP', 'c++', '计算机', '软件开发', 'Docker', 'docker']
 
     def __init__(self, keyword, filed_list):
         self.keyword = keyword
@@ -55,8 +55,9 @@ class GetData(object):
         self.db = client[self.KET_WORDS_DB]
         self.coll_key = self.db[self.KET_WORDS_COLL]
 
-        pool = redis.ConnectionPool(host='localhost', port=6379, decode_responses=True)
-        self.rds = redis.Redis(connection_pool=pool)        
+        pool = redis.ConnectionPool(
+            host='localhost', port=6379, decode_responses=True)
+        self.rds = redis.Redis(connection_pool=pool)
 
         if not self.__check_key_exit():
             self.keyword_json = {}
@@ -66,8 +67,6 @@ class GetData(object):
             self.colle_req = self.db[keyword + '_coll_requests']
             self._filed_api()
             self._write_json_to_file()
-        
-
 
     def _filed_api(self):
         for filed in self.filed_list:
@@ -90,23 +89,22 @@ class GetData(object):
 
         # if self.__openfile("r"):
         #     return True
-        # return False    
-        
+        # return False
+
         result = self.rds.get(self.keyword)
         if result:
             self.__get_from_io(json.loads(result))
-
             return True
         return False
 
     def _save_to_redis(self):
         try:
             self.rds.set(self.keyword, json.dumps(self.keyword_json))
-            return True
         except Exception as e:
             return False
-    
-    def __get_from_io(self,result):
+        return True
+
+    def __get_from_io(self, result):
         self.__salary = [tuple(r) for r in result['salary_data']]
         self.__work_year = result['work_year']
         self.__education = result['education']
@@ -114,21 +112,21 @@ class GetData(object):
         self.__req_data = [tuple(r) for r in result['requests']]
         return True
 
-    def __openfile(self, open_model):
-        with open(self.FILE_NAME, open_model, encoding="utf-8") as f:
-            if open_model == "a+":
-                f.write(json.dumps(self.keyword_json, sort_keys=True) + '\n')
-                # f.write(strself.keyword_json)
-            else:
-                result = f.readlines()
-                if len(result) == 0:
-                    return False
-                for line in result:
-                    result = json.loads(line)
-                    if result['keyword'] == self.keyword:
-                        self.__get_from_io(result)
-                        return True
-                return False
+    # def __openfile(self, open_model):
+    #     with open(self.FILE_NAME, open_model, encoding="utf-8") as f:
+    #         if open_model == "a+":
+    #             f.write(json.dumps(self.keyword_json, sort_keys=True) + '\n')
+    #             # f.write(strself.keyword_json)
+    #         else:
+    #             result = f.readlines()
+    #             if len(result) == 0:
+    #                 return False
+    #             for line in result:
+    #                 result = json.loads(line)
+    #                 if result['keyword'] == self.keyword:
+    #                     self.__get_from_io(result)
+    #                     return True
+    #             return False
 
     def __get_data(self, key):
         filed = {'_id': False, key: True}

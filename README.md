@@ -11,17 +11,17 @@
 ```
 #目前项目结构
 	spider \         # 爬虫部分
+		__init__.py 
 		config.py          # 爬虫配置
 		spider_util.py     # 爬虫类
 		dataapi.py 		   # 存储类
-		startapi.py        # 对外接口(集合爬虫与存储)
 	data_show \      # 数据清洗展示部分
+		__init__.py
 		data.py 	   # 从数据库中取出数据
 		show.py        # 生成视图api
 	FlyJob \         # web平台
 		main \         # 主模块
 			views.py       # 主逻辑模块
-			
  			__init__.py    # 蓝图初始化
  		templates \   # HTML模板目录
  			index.html     # 首页
@@ -35,11 +35,10 @@
  				..
  			css \
  				..
+ 		startapi.py        # 对外接口(集合爬虫与存储)
 		manage.py     # 服务器启动文件
 		__init__.py   # 服务器初始化
 		keyword.json  # 数据存储文件
-	test #测试模块
-		test_spider.py 测试爬虫模块
 ```
 
 ------
