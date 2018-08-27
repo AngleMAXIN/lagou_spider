@@ -1,0 +1,21 @@
+[[source]]
+verify_ssl = true
+name = "pypi"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+
+[dev-packages]
+
+[packages]
+pyecharts = "==0.5.6"
+pymongo = "*"
+flask = "==0.12.4"
+jieba = "*"
+requests = "*"
+echarts-china-cities-pypkg = "*"
+echarts-china-provinces-pypkg = "*"
+echarts-countries-pypkg = "*"
+redis = "*"
+gunicorn = "*"
+
+[requires]
+python_version = "3.5"

@@ -6,8 +6,19 @@ from data_show.data import GetData
 
 
 class EchartsApi(object):
-
+    """
+    provide Echarts Api
+    """
     def __init__(self, key_list, keyword):
+        '''
+        Function: __init__
+        Summary: InsertHere
+        Examples: InsertHere
+        Attributes: 
+            @param (key_list): ['city', 'salary'...]
+            @param (keyword): such as python, java ..
+        Returns: InsertHere
+        '''
         self.key_list = key_list
         self.g = GetData(keyword,key_list)
 
@@ -43,7 +54,6 @@ class EchartsApi(object):
     def _education_show(self):
         pie = Pie("学历统计", title_pos='center', width=1200, height=500)
         attr, value = pie.cast(self.g.education_data)
-        # print(attr)
         pie.add("", attr, value, adius=[40, 80],
                 title_pos='center', is_label_show=True,
                 legend_orient='vertical', legend_pos='left')

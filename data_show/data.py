@@ -14,6 +14,12 @@ MONGO_URL = '127.0.0.1:27017'
 
 
 def keywords():
+    '''
+    Function: keywords
+    Summary: find all keyword from MongoDB 
+    Examples: InsertHere
+    Returns: InsertHere
+    '''
     client = MongoClient(MONGO_URL)
     db_keys = client['keyword_list']
     colle_keyword = db_keys['coll_keyword']
@@ -51,15 +57,20 @@ class GetData(object):
         self.keyword = keyword
         self.filed_list = filed_list
 
+        # Mongo 
         client = MongoClient(MONGO_URL)
         self.db = client[self.KET_WORDS_DB]
         self.coll_key = self.db[self.KET_WORDS_COLL]
 
+        # Redis 
         pool = redis.ConnectionPool(
             host='localhost', port=6379, decode_responses=True)
         self.rds = redis.Redis(connection_pool=pool)
 
+
         if not self.__check_key_exit():
+            # if redis had not this data. get data from database and sava to redis
+            # if hava , just get dat from redis
             self.keyword_json = {}
             self.db = client['job_info']
             self.colle = self.db[keyword + '_coll_job']
@@ -129,6 +140,15 @@ class GetData(object):
     #             return False
 
     def __get_data(self, key):
+        '''
+        Function: __get_data
+        Summary:  get data from mongodb by keyword and parse data
+        Examples: InsertHere
+        Attributes: 
+            @param (self):InsertHere
+            @param (key): filedname
+        Returns: InsertHere
+        '''
         filed = {'_id': False, key: True}
         if key in self.__comp_keys:
             collect = self.colle_com
@@ -148,6 +168,16 @@ class GetData(object):
         return result
 
     def __count_data(self, data=None, filed=None):
+        '''
+        Function: __count_data
+        Summary:  data count, if filed is 'data', need Chinese word segmentation
+        Examples: InsertHere
+        Attributes: 
+            @param (self):InsertHere
+            @param (data) default=None: InsertHere
+            @param (filed) default=None: InsertHere
+        Returns: InsertHere
+        '''
         count_min = 0
         data_dict = Counter(data)
         if filed == 'salary':
@@ -164,6 +194,7 @@ class GetData(object):
         elif filed == 'data':
             self.__req_data = list(filter(
                 self.__filter_bed_words,
+                # take the top 60
                 data_dict.most_common(60))
             )
 

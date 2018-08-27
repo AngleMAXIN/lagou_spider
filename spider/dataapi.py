@@ -5,7 +5,9 @@ from pymongo import MongoClient
 
 monkey.patch_all()
 
+
 class DateStore(object):
+
     HOST = "localhost"
     PORT = 27017
     SAVE_OVER = False
@@ -18,7 +20,7 @@ class DateStore(object):
         self.workyear = gx
         self.cities = cities
 
-        self.client = MongoClient(host=self.HOST, port=self.PORT, use_greenlets=True)
+        self.client = MongoClient(host=self.HOST, port=self.PORT)
         self.keyword_db = self.client[self.KET_WORDS_DB]
         self.coll_keywords = self.keyword_db[self.KET_WORDS_COLL]
         self.db = self.client[self.DB]
@@ -30,13 +32,10 @@ class DateStore(object):
     def __save_keywords(self):
         keyword = {
             "keyword": self.coll_name,
-            "city": self.cities,
+            "city": self.cities[0],
             "workyear": self.workyear
         }
         self.coll_keywords.insert(keyword)
-
-    def sava_keyword_api(self):
-        self.__save_keywords()
 
     def __save_com(self, com_doc):
         if len(com_doc) == 0:
@@ -63,12 +62,12 @@ class DateStore(object):
                 gevent.spawn(self.__save_com, com_doc),
                 gevent.spawn(self.__save_job, job_doc),
                 gevent.spawn(self.__save_requests, request_doc)
-        ])
+            ])
         except Exception as e:
             raise e
         else:
             self.SAVE_OVER = True
-        
+
     @property
     def save_result(self):
         return self.SAVE_OVER
@@ -80,4 +79,3 @@ class DateStore(object):
 #     gx = "不限"
 #     for k in key:
 #         ex = DateStore(k,gx,city)
-        

@@ -8,6 +8,16 @@ from spider import Spider
 
 
 def spider_start(key_word=None, cities=None, work_year=''):
+    '''
+    Function: spider_start
+    Summary:   start spider then save data to MongoDB
+    Examples: InsertHere
+    Attributes: 
+        @param (key_word) default=None: InsertHere
+        @param (cities) default=None: InsertHere
+        @param (work_year) default='': InsertHere
+    Returns: InsertHere
+    '''
     print("----" * 10, "the small spider is start!")
 
     start_time = time.time()
@@ -33,7 +43,7 @@ def spider_start(key_word=None, cities=None, work_year=''):
 if __name__ == '__main__':
     keyword = input("input your keyword:")
     cities = input("input your ares:")
-    work_year = ''
+    work_year = '不限'
     cities_list = cities.split(" ")
     # for city in cities_list:
     #     print(city)

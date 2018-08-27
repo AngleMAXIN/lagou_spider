@@ -25,10 +25,7 @@ class Spider(object):
         self.work_year = work_year
 
     def __post_index_data(self, url=None, pn=None):
-        """
-        请求url,返回json格式数据,如果返回正确结果,则继续解析数据;
-        否则就拒绝访问
-        """
+        """请求url,返回json格式数据,如果返回正确结果,则继续解析数据;"""
         OVER = 2
         data = {'first': 'true', 'pn': pn, 'kd': self.keyword}
         while OVER > 0:

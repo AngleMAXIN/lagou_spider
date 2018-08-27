@@ -1,0 +1,55 @@
+[2018-08-27 10:04:01 +0800] [6902] [INFO] Starting gunicorn 19.9.0
+[2018-08-27 10:04:01 +0800] [6902] [INFO] Listening at: http://127.0.0.1:5000 (6902)
+[2018-08-27 10:04:01 +0800] [6902] [INFO] Using worker: sync
+[2018-08-27 10:04:01 +0800] [6905] [INFO] Booting worker with pid: 6905
+[2018-08-27 10:04:01 +0800] [6906] [INFO] Booting worker with pid: 6906
+[2018-08-27 10:04:01 +0800] [6907] [INFO] Booting worker with pid: 6907
+[2018-08-27 10:04:01 +0800] [6908] [INFO] Booting worker with pid: 6908
+[2018-08-27 10:05:35 +0800] [6993] [INFO] Starting gunicorn 19.9.0
+[2018-08-27 10:05:35 +0800] [6993] [INFO] Listening at: http://127.0.0.1:5000 (6993)
+[2018-08-27 10:05:35 +0800] [6993] [INFO] Using worker: sync
+[2018-08-27 10:05:35 +0800] [6996] [INFO] Booting worker with pid: 6996
+[2018-08-27 10:05:35 +0800] [6997] [INFO] Booting worker with pid: 6997
+[2018-08-27 10:05:36 +0800] [7000] [INFO] Booting worker with pid: 7000
+[2018-08-27 10:05:36 +0800] [7001] [INFO] Booting worker with pid: 7001
+[2018-08-27 10:06:17 +0800] [6993] [CRITICAL] WORKER TIMEOUT (pid:6996)
+[2018-08-27 10:06:17 +0800] [6996] [INFO] Worker exiting (pid: 6996)
+[2018-08-27 10:06:17 +0800] [7029] [INFO] Booting worker with pid: 7029
+[2018-08-27 10:09:44 +0800] [7162] [INFO] Starting gunicorn 19.9.0
+[2018-08-27 10:09:44 +0800] [7162] [INFO] Listening at: http://127.0.0.1:5000 (7162)
+[2018-08-27 10:09:44 +0800] [7162] [INFO] Using worker: sync
+[2018-08-27 10:09:44 +0800] [7165] [INFO] Booting worker with pid: 7165
+[2018-08-27 10:09:44 +0800] [7166] [INFO] Booting worker with pid: 7166
+[2018-08-27 10:09:44 +0800] [7169] [INFO] Booting worker with pid: 7169
+[2018-08-27 10:09:45 +0800] [7171] [INFO] Booting worker with pid: 7171
+[2018-08-27 10:10:18 +0800] [7162] [CRITICAL] WORKER TIMEOUT (pid:7171)
+[2018-08-27 10:10:18 +0800] [7171] [INFO] Worker exiting (pid: 7171)
+[2018-08-27 10:10:18 +0800] [7197] [INFO] Booting worker with pid: 7197
+Building prefix dict from the default dictionary ...
+DEBUG:jieba:Building prefix dict from the default dictionary ...
+Dumping model to file cache /tmp/jieba.cache
+DEBUG:jieba:Dumping model to file cache /tmp/jieba.cache
+Loading model cost 1.128 seconds.
+DEBUG:jieba:Loading model cost 1.128 seconds.
+Prefix dict has been built succesfully.
+DEBUG:jieba:Prefix dict has been built succesfully.
+[2018-08-27 10:11:26 +0800] [7162] [CRITICAL] WORKER TIMEOUT (pid:7169)
+[2018-08-27 10:11:26 +0800] [7169] [INFO] Worker exiting (pid: 7169)
+[2018-08-27 10:11:26 +0800] [7291] [INFO] Booting worker with pid: 7291
+[2018-08-27 10:11:33 +0800] [7162] [CRITICAL] WORKER TIMEOUT (pid:7165)
+[2018-08-27 10:11:33 +0800] [7165] [INFO] Worker exiting (pid: 7165)
+[2018-08-27 10:11:33 +0800] [7302] [INFO] Booting worker with pid: 7302
+[2018-08-27 10:20:31 +0800] [7509] [INFO] Starting gunicorn 19.9.0
+[2018-08-27 10:20:31 +0800] [7509] [INFO] Listening at: http://127.0.0.1:5000 (7509)
+[2018-08-27 10:20:31 +0800] [7509] [INFO] Using worker: sync
+[2018-08-27 10:20:31 +0800] [7512] [INFO] Booting worker with pid: 7512
+[2018-08-27 10:20:31 +0800] [7514] [INFO] Booting worker with pid: 7514
+[2018-08-27 10:20:31 +0800] [7516] [INFO] Booting worker with pid: 7516
+[2018-08-27 10:20:31 +0800] [7517] [INFO] Booting worker with pid: 7517
+[2018-08-27 10:21:46 +0800] [7587] [INFO] Starting gunicorn 19.9.0
+[2018-08-27 10:21:46 +0800] [7587] [INFO] Listening at: http://127.0.0.1:5000 (7587)
+[2018-08-27 10:21:46 +0800] [7587] [INFO] Using worker: sync
+[2018-08-27 10:21:46 +0800] [7590] [INFO] Booting worker with pid: 7590
+[2018-08-27 10:21:46 +0800] [7591] [INFO] Booting worker with pid: 7591
+[2018-08-27 10:21:46 +0800] [7594] [INFO] Booting worker with pid: 7594
+[2018-08-27 10:21:46 +0800] [7595] [INFO] Booting worker with pid: 7595
