@@ -2,5 +2,6 @@
 __pycache__
 inspectionProfiles
 text
+keyword.json
 *.xml
 *.iml

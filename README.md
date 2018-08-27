@@ -2,14 +2,14 @@
 
 ### what to do
 
-#### 为寻找工作机会的同胞,提供数据支持
+#### 为寻找工作机会的同胞,提供数据支持 [Demo](http://39.106.120.138)
 
 ------
 
 #### what look like 
 
 ```
-#目前项目结构
+# :目前项目结构
 	spider \         # 爬虫部分
 		__init__.py 
 		config.py          # 爬虫配置
@@ -19,6 +19,9 @@
 		__init__.py
 		data.py 	   # 从数据库中取出数据
 		show.py        # 生成视图api
+	log \        	 # 日志
+		gunicron.log
+		gunicron.err
 	FlyJob \         # web平台
 		main \         # 主模块
 			views.py       # 主逻辑模块
@@ -39,6 +42,10 @@
 		manage.py     # 服务器启动文件
 		__init__.py   # 服务器初始化
 		keyword.json  # 数据存储文件
+		. gitignore   # git忽略文件
+		Pipfile       # pipenv 项目库文件
+		Pipfile.lock  # 依赖库文件
+		supervisor_flyjob.conf  # supervisor 配置文件
 ```
 
 ------
@@ -58,6 +65,12 @@
 ###### jieba             # 中文分词库
 
 ###### redis            # 缓存(效果并不比直接存在文件里好)
+
+bootstrap jq (前端ui库)
+
+部署方式:
+
+​	Nginx+gunicorn+Supervisor+MongoDB+Redis
 
 
 
