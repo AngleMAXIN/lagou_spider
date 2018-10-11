@@ -1,4 +1,6 @@
-# !/usr/bin/env python# -*- coding:utf-8 -*-
+# !/usr/bin/env python
+# -*- coding:utf-8 -*-
+
 import gevent
 from gevent import monkey
 from pymongo import MongoClient
@@ -6,7 +8,7 @@ from pymongo import MongoClient
 monkey.patch_all()
 
 
-class DateStore(object):
+class LaGouDateStore(object):
 
     HOST = "localhost"
     PORT = 27017
@@ -79,3 +81,13 @@ class DateStore(object):
 #     gx = "不限"
 #     for k in key:
 #         ex = DateStore(k,gx,city)
+
+
+class (object):
+    """docstring for """
+    HOST = "127.0.0.1"
+    PORT = 27017
+    DB = 'job_info'
+    
+    def __init__(self, arg):
+        

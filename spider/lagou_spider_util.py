@@ -4,7 +4,7 @@
 import time
 import random
 import requests
-from spider import config
+from lagou_spider.spider import config
 from lxml import etree
 
 
@@ -38,7 +38,7 @@ class Spider(object):
                 self.__data_parser(result)
                 break
             else:
-                print("---------拒绝访问了-------------")
+                print("lagou---------拒绝访问了-------------")
 
     def __get_detail_data(self, position_id=None):
 

@@ -53,3 +53,44 @@ DEBUG:jieba:Prefix dict has been built succesfully.
 [2018-08-27 10:21:46 +0800] [7591] [INFO] Booting worker with pid: 7591
 [2018-08-27 10:21:46 +0800] [7594] [INFO] Booting worker with pid: 7594
 [2018-08-27 10:21:46 +0800] [7595] [INFO] Booting worker with pid: 7595
+[2018-08-27 14:35:44 +0800] [7587] [CRITICAL] WORKER TIMEOUT (pid:7594)
+[2018-08-27 14:35:44 +0800] [7587] [CRITICAL] WORKER TIMEOUT (pid:7595)
+[2018-08-27 14:35:44 +0800] [7587] [CRITICAL] WORKER TIMEOUT (pid:7590)
+[2018-08-27 14:35:44 +0800] [7594] [INFO] Worker exiting (pid: 7594)
+[2018-08-27 14:35:44 +0800] [7595] [INFO] Worker exiting (pid: 7595)
+[2018-08-27 14:35:44 +0800] [7590] [INFO] Worker exiting (pid: 7590)
+[2018-08-27 14:35:44 +0800] [7587] [CRITICAL] WORKER TIMEOUT (pid:7591)
+[2018-08-27 14:35:44 +0800] [7591] [INFO] Worker exiting (pid: 7591)
+[2018-08-27 14:35:45 +0800] [12846] [INFO] Booting worker with pid: 12846
+[2018-08-27 14:35:45 +0800] [12847] [INFO] Booting worker with pid: 12847
+[2018-08-27 14:35:45 +0800] [12856] [INFO] Booting worker with pid: 12856
+[2018-08-27 14:35:45 +0800] [12857] [INFO] Booting worker with pid: 12857
+[2018-08-27 15:22:27 +0800] [7587] [CRITICAL] WORKER TIMEOUT (pid:12856)
+[2018-08-27 15:22:27 +0800] [7587] [CRITICAL] WORKER TIMEOUT (pid:12857)
+[2018-08-27 15:22:27 +0800] [7587] [CRITICAL] WORKER TIMEOUT (pid:12846)
+[2018-08-27 15:22:27 +0800] [12856] [INFO] Worker exiting (pid: 12856)
+[2018-08-27 15:22:27 +0800] [12857] [INFO] Worker exiting (pid: 12857)
+[2018-08-27 15:22:27 +0800] [12846] [INFO] Worker exiting (pid: 12846)
+[2018-08-27 15:22:27 +0800] [7587] [CRITICAL] WORKER TIMEOUT (pid:12847)
+[2018-08-27 15:22:27 +0800] [12847] [INFO] Worker exiting (pid: 12847)
+[2018-08-27 15:22:27 +0800] [14153] [INFO] Booting worker with pid: 14153
+[2018-08-27 15:22:27 +0800] [14155] [INFO] Booting worker with pid: 14155
+[2018-08-27 15:22:27 +0800] [14156] [INFO] Booting worker with pid: 14156
+[2018-08-27 15:22:27 +0800] [14159] [INFO] Booting worker with pid: 14159
+[2018-08-27 16:41:40 +0800] [7587] [CRITICAL] WORKER TIMEOUT (pid:14153)
+[2018-08-27 16:41:40 +0800] [7587] [CRITICAL] WORKER TIMEOUT (pid:14155)
+[2018-08-27 16:41:40 +0800] [14153] [INFO] Worker exiting (pid: 14153)
+[2018-08-27 16:41:40 +0800] [14155] [INFO] Worker exiting (pid: 14155)
+[2018-08-27 16:41:40 +0800] [7587] [CRITICAL] WORKER TIMEOUT (pid:14156)
+[2018-08-27 16:41:40 +0800] [7587] [CRITICAL] WORKER TIMEOUT (pid:14159)
+[2018-08-27 16:41:40 +0800] [14156] [INFO] Worker exiting (pid: 14156)
+[2018-08-27 16:41:40 +0800] [14159] [INFO] Worker exiting (pid: 14159)
+[2018-08-27 16:41:40 +0800] [16334] [INFO] Booting worker with pid: 16334
+[2018-08-27 16:41:40 +0800] [16336] [INFO] Booting worker with pid: 16336
+[2018-08-27 16:41:41 +0800] [16338] [INFO] Booting worker with pid: 16338
+[2018-08-27 16:41:41 +0800] [16339] [INFO] Booting worker with pid: 16339
+[2018-08-27 16:41:46 +0800] [7587] [INFO] Handling signal: term
+[2018-08-27 16:41:46 +0800] [16334] [INFO] Worker exiting (pid: 16334)
+[2018-08-27 16:41:46 +0800] [16339] [INFO] Worker exiting (pid: 16339)
+[2018-08-27 16:41:46 +0800] [16338] [INFO] Worker exiting (pid: 16338)
+[2018-08-27 16:41:46 +0800] [16336] [INFO] Worker exiting (pid: 16336)

@@ -3,5 +3,7 @@ __pycache__
 inspectionProfiles
 text
 keyword.json
+Fly Job.md
+terminal.glue
 *.xml
 *.iml
