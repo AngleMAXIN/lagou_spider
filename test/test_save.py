@@ -31,7 +31,7 @@
 #     # print("搜索引擎模式",count_3)
 # main()
 
-from spider import dataapi
-import sys
+# from spider import dataapi
+import os.path
 
-print(sys.path)
+print(os.path.dirname(os.getcwd())+"/log/")

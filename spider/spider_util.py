@@ -5,8 +5,9 @@ import re
 import time
 import json
 import random
+
 import requests
-from lagou_spider.conf import get_header, post_headers, get_cookie
+from lagou_spider.conf import get_header, post_headers, get_cookie, logger
 from lxml import etree
 
 
@@ -55,7 +56,7 @@ class LaGou_Spider(object):
         time.sleep(1)
         if result.status_code == 200:
             selector = etree.HTML(result.text)
-            r = selector.xpath('//*[@id="job_detail"]/dd[2]/div/p/text()')
+            r = selector.xpath('//*[@id="job_detail"]/dd[2]/div/p/text()', )
             requests_list = dict(data=r)
             return requests_list
         return None
@@ -164,21 +165,20 @@ class ZhiLian_Spdier(object):
     spider of zhilian
     """
 
-    def __init__(self):
+    def __init__(self, keyword='', cityId=530, page=0):
         self.numfound = 120
-
-    def start_spider(self, keyword='', cityId=530, page=0):
 
         self.keyword = keyword
         self.cityId = cityId
         self.page = page
+        self.job_info = []
 
+    def start_spider(self):
         for page_number in range(4):
             # print("===============",self.numfound//60)
             self.__get_jobs_list(page_number)
 
     def __get_jobs_list(self, page=0):
-
         url = "https://fe-api.zhaopin.com/c/i/sou"
         payload = {'pageSize': 60,
                    'cityId': self.cityId,  # city id
@@ -195,8 +195,25 @@ class ZhiLian_Spdier(object):
             # print("******************",self.numfound)
             jobs_results_list = r_json['data']['results']
             for job_info in jobs_results_list:
-                print(job_info['positionURL'], job_info['salary'], job_info['updateDate'],
-                      job_info['workingExp']['name'], job_info['eduLevel']['name'])
+                # positionURL : 详情页 / url salary : 薪酬 / updateDate : 发布时间
+                # job_info['workingExp']['name'] : 经验要求 / eduLevel : 学历 / name : 职位名称
+                self.job_info.append({
+                    'jobName': job_info['jobName'],
+                    'salary': job_info['salary'],
+                    'city': job_info['city']['display'],
+                    'updateDate': job_info['updateDate'],
+                    'positionURL': job_info['positionURL'],
+                    'eduLevel': job_info['eduLevel']['name'],
+                    'workingExp': job_info['workingExp']['name']
+                })
+                print(
+                    job_info['positionURL'],
+                    job_info['salary'],
+                    job_info['updateDate'],
+                    job_info['workingExp']['name'],
+                    job_info['eduLevel']['name'],
+                    job_info['city']['display']
+                )
         else:
             print("zhilian---------拒绝访问了-------------")
 
@@ -214,54 +231,52 @@ class ShiXi_Spider(object):
         self.k = keyword
         self.city = city
         self.job_urls = []
-        self.index_job_urls_res = []
+        self.index_job_html = []
         self.res = []
-        self.job_info = []
+        self.every_job_info = []
 
     def _get_jobs_list(self):
         try:
-            # html = requests.get(url)
-            # if html.status_code == 200:
-            #     # print(html.text)
-            #     return html.text
-            # return None
             url = "http://www.shixiseng.com/interns/st-intern_?k={0}&t=zj&p={1}"
             index_urls = [url.format(self.k, p) for p in range(1, self.page)]
-            index_tasks = [grequests.get(url) for url in index_urls]
-            self.index_job_urls_res = grequests.map(index_tasks, size=6)
+            self.index_job_html = self.__grequests_api(index_urls)
+            # print(self.index_job_urls[0].text)
             return True
         except Exception as e:
-            print(e, "1")
+            logger.error("_get_jobs_list {0}".format(e))
             return False
 
-    def __parse_job_url_html(self):
-        for html_text in self.index_job_urls_res:
+    def __grequests_api(self, url_list):
+        tasks = [grequests.get(url) for url in url_list]
+        return grequests.map(tasks, size=6)
+
+    def _parse_job_url_html(self):
+        for html in self.index_job_html:
             pattern = r'<a class="name" href="(.*?)" target="_blank"'
-            result = re.findall(pattern, html_text.text, re.S)
+            result = re.findall(pattern, html.text, re.S)
             url = "http://www.shixiseng.com"
             for suffix_url in result:
                 parse_url = url + suffix_url
                 self.job_urls.append(parse_url)
         return True
 
-    def __parse_job_info(self):
-
+    def _parse_job_info(self):
         for html in self.res:
             try:
-                if html.status_code == 200:
-                    reg = r'<div class="new_job_name" title="(.*?)">'
-                    job_name = re.findall(reg, html.text)[0]
-                    reg = r'<span title="(.*?)" class="job_position">'
-                    job_city = re.findall(reg, html.text)[0]
-                    reg = r'<span class="job_academic">(.*?)</span>'
-                    job_edu = re.findall(reg, html.text)[0]
-                    self.job_info.append({
-                        'job_name': job_name,
-                        'job_city': job_city,
-                        'job_limit': job_edu
-                    })
+                # if html.status_code == 200:
+                reg = r'<div class="new_job_name" title="(.*?)">'
+                job_name = re.findall(reg, html.text)[0]
+                reg = r'<span title="(.*?)" class="job_position">'
+                job_city = re.findall(reg, html.text)[0]
+                reg = r'<span class="job_academic">(.*?)</span>'
+                job_edu = re.findall(reg, html.text)[0]
+                self.every_job_info.append({
+                    'job_name': job_name,
+                    'job_city': job_city,
+                    'job_limit': job_edu
+                })
             except Exception as e:
-                print(e, "2")
+                logger.error("__parse_job_info {0}".format(e))
                 return False
         return True
 
@@ -272,11 +287,14 @@ class ShiXi_Spider(object):
     #         print("数据存储成功")
 
     def start_spider(self):
-        if self._get_jobs_list() and self.__parse_job_url_html():
-            tasks = [grequests.get(url) for url in self.job_urls]
-            self.res = grequests.map(tasks, size=6)
-            if self.__parse_job_info():
-                print(self.job_info)
+        if self._get_jobs_list() and self._parse_job_url_html():
+            self.res = self.__grequests_api(self.job_urls)
+            if self._parse_job_info():
+                logger.info(
+                    "Shixiseng_spider  have pull {0} pages ,data len is {1}".format(self.page - 1,
+                                                                                    len(self.every_job_info)))
+                print(self.every_job_info)
+                print(self.job_urls)
             return True
         return False
 

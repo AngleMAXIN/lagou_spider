@@ -33,9 +33,9 @@ class LaGouDateStore(object):
 
     def __save_keywords(self):
         keyword = {
-            "keyword": self.coll_name,
-            "city": self.cities[0],
-            "workyear": self.workyear
+            'keyword': self.coll_name,
+            'city': self.cities[0],
+            'workyear': self.workyear
         }
         self.coll_keywords.insert(keyword)
 
