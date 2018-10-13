@@ -83,11 +83,3 @@ class LaGouDateStore(object):
 #         ex = DateStore(k,gx,city)
 
 
-class (object):
-    """docstring for """
-    HOST = "127.0.0.1"
-    PORT = 27017
-    DB = 'job_info'
-    
-    def __init__(self, arg):
-        

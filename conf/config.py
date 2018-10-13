@@ -45,7 +45,7 @@ post_headers = [{
 }]
 
 
-def get_header():
+def post_header():
     return random.choice(post_headers)
 
 
@@ -61,7 +61,7 @@ post_cookies = {
     SEARCH_ID=054844d5dc124332b162539f86eae6ea"
 }
 
-get_headers = {
+get_header = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
     'Accept-Encoding': 'gzip, deflate, br;',
     'Accept-Language': 'zh-CN,zh;q=0.9',
@@ -72,7 +72,7 @@ get_headers = {
     'Upgrade-Insecure-Requests': '1',
     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.75 Safari/537.36'
 }
-get_cookies = {
+get_cookie = {
     'Cookie': '_ga=GA1.2.429037355.1532907445; user_trace_token=20180730073724-58ce1db1-9388-11e8-a082-5254005c3644; \
                 LGUID=20180730073724-58ce2118-9388-11e8-a082-5254005c3644; \
                 _gid=GA1.2.977130810.1533126669; index_location_city=%E5%85%A8%E5%9B%BD; \

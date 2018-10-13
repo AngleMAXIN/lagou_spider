@@ -1,15 +1,19 @@
 # !/usr/bin/env python
 # -*- coding:utf-8 -*-
 
+import re
 import time
 import json
 import random
 import requests
-from lagou_spider.spider import config
+from lagou_spider.conf import get_header, post_headers, get_cookie
 from lxml import etree
 
 
-class Spider(object):
+class LaGou_Spider(object):
+    """
+    spider of LaGou
+    """
     __page_num = 30
 
     urls_list = []
@@ -33,7 +37,7 @@ class Spider(object):
         data = {'first': 'true', 'pn': pn, 'kd': self.keyword}
         while OVER > 0:
             result = requests.post(
-                url, data=data, headers=config.get_header()).json()
+                url, data=data, headers=post_headers()).json()
             OVER -= 1
 
             time.sleep(random.choice(self.SLEEP_TIME))
@@ -47,7 +51,7 @@ class Spider(object):
 
         url = "https://www.lagou.com/jobs/{}.html".format(str(position_id))
         result = requests.get(
-            url, headers=config.get_headers, cookies=config.get_cookies)
+            url, headers=get_header, cookies=get_cookie)
         time.sleep(1)
         if result.status_code == 200:
             selector = etree.HTML(result.text)
@@ -129,7 +133,7 @@ class Spider(object):
             i += 1
             info = self.__get_detail_data(post_id)
             self.__position_result.append(info)
-            print("\r"+"had download  {:.2%}".format(i / posts_len), end="")
+            print("\r" + "had download  {:.2%}".format(i / posts_len), end="")
 
     def get_urls_data(self):
         for url in self.urls_list:
@@ -156,12 +160,15 @@ class Spider(object):
 
 
 class ZhiLian_Spdier(object):
-    """docstring for Spdier"""
+    """
+    spider of zhilian
+    """
 
     def __init__(self):
         self.numfound = 120
 
-    def spider_start_api(self, keyword='', cityId=530, page=0):
+    def start_spider(self, keyword='', cityId=530, page=0):
+
         self.keyword = keyword
         self.cityId = cityId
         self.page = page
@@ -181,7 +188,7 @@ class ZhiLian_Spdier(object):
                    'start': 0 + 60 * page}  # next page
 
         r = requests.get(url, params=payload).text
-        print("the --------- {0} --------".format(page))
+        print("the --------- {0} --------".format(page + 1))
         r_json = json.loads(r)
         if r_json['code'] == 200:
             # self.numfound = r_json['data']['numFound']
@@ -192,3 +199,88 @@ class ZhiLian_Spdier(object):
                       job_info['workingExp']['name'], job_info['eduLevel']['name'])
         else:
             print("zhilian---------拒绝访问了-------------")
+
+
+import grequests
+
+
+class ShiXi_Spider(object):
+    """
+    Spider about Shixiseng
+    """
+    page = 2
+
+    def __init__(self, keyword='', city=''):
+        self.k = keyword
+        self.city = city
+        self.job_urls = []
+        self.index_job_urls_res = []
+        self.res = []
+        self.job_info = []
+
+    def _get_jobs_list(self):
+        try:
+            # html = requests.get(url)
+            # if html.status_code == 200:
+            #     # print(html.text)
+            #     return html.text
+            # return None
+            url = "http://www.shixiseng.com/interns/st-intern_?k={0}&t=zj&p={1}"
+            index_urls = [url.format(self.k, p) for p in range(1, self.page)]
+            index_tasks = [grequests.get(url) for url in index_urls]
+            self.index_job_urls_res = grequests.map(index_tasks, size=6)
+            return True
+        except Exception as e:
+            print(e, "1")
+            return False
+
+    def __parse_job_url_html(self):
+        for html_text in self.index_job_urls_res:
+            pattern = r'<a class="name" href="(.*?)" target="_blank"'
+            result = re.findall(pattern, html_text.text, re.S)
+            url = "http://www.shixiseng.com"
+            for suffix_url in result:
+                parse_url = url + suffix_url
+                self.job_urls.append(parse_url)
+        return True
+
+    def __parse_job_info(self):
+
+        for html in self.res:
+            try:
+                if html.status_code == 200:
+                    reg = r'<div class="new_job_name" title="(.*?)">'
+                    job_name = re.findall(reg, html.text)[0]
+                    reg = r'<span title="(.*?)" class="job_position">'
+                    job_city = re.findall(reg, html.text)[0]
+                    reg = r'<span class="job_academic">(.*?)</span>'
+                    job_edu = re.findall(reg, html.text)[0]
+                    self.job_info.append({
+                        'job_name': job_name,
+                        'job_city': job_city,
+                        'job_limit': job_edu
+                    })
+            except Exception as e:
+                print(e, "2")
+                return False
+        return True
+
+    # def Save_Mongo(result):
+    #     client = pymongo.MongoClient(MongoUrl, connect=False)
+    #     db = client[MongoDB]
+    #     if db[MongoTable].insert(result):
+    #         print("数据存储成功")
+
+    def start_spider(self):
+        if self._get_jobs_list() and self.__parse_job_url_html():
+            tasks = [grequests.get(url) for url in self.job_urls]
+            self.res = grequests.map(tasks, size=6)
+            if self.__parse_job_info():
+                print(self.job_info)
+            return True
+        return False
+
+
+if __name__ == '__main__':
+    spider = ShiXi_Spider("python")
+    spider.start_spider()

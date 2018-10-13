@@ -3,4 +3,4 @@
 
 
 from .dataapi import LaGouDateStore
-from .lagou_spider_util import Spider
+from .spider_util import spider

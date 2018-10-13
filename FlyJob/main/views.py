@@ -1,11 +1,11 @@
 # !/usr/bin/env python
 # -*- coding:utf-8 -*-
 
+from data_show.data import keywords
+from data_show.show import EchartsApi
 from flask import render_template
 
 from ..main import main
-from data_show.show import EchartsApi
-from data_show.data import keywords
 
 
 @main.route('/')
