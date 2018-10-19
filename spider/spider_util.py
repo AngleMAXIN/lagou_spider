@@ -5,10 +5,53 @@ import re
 import time
 import json
 import random
-
 import requests
-from lagou_spider.conf import get_header, post_headers, get_cookie, logger
+import grequests
+from .config import get_header, post_headers, get_cookie
+from .log import logger
 from lxml import etree
+
+
+class Spider(object):
+    """docstring for  Spider"""
+
+    def __init__(self, keyword='', city=''):
+        self.keyword = keyword
+        self.city = city
+        # 页数
+        self.page = 5
+        # 最终爬取的职位信息,元素类型为字典
+        self._jobs_info_list = []
+        # 所有职位的url
+        self._jobs_url_list = 'ok'
+
+    def start_spider(self):
+        '''
+            开启爬虫
+        '''
+        pass
+
+    def _parse_job_html(self):
+        '''
+            解析每一页的职位信息
+        '''
+        pass
+
+    def _get_index_jobs_list(self):
+        '''
+            获取职位的url以及职位名称,薪资,经验,学历
+        '''
+        print("hello")
+
+    @property
+    def jobs_info_list(self):
+        # 返回最终职位数据
+        return self._jobs_info_list
+
+    @property
+    def jobs_url_list(self):
+        # 返回职位的url
+        return self._jobs_url_list
 
 
 class LaGou_Spider(object):
@@ -16,21 +59,20 @@ class LaGou_Spider(object):
     spider of LaGou
     """
     __page_num = 30
-
-    urls_list = []
-
-    __company_list = []
-    __jobs_list = []
-    __positionId = []
-    __position_result = []
     SLEEP_TIME = [1, 2, 14, 4, 5, 5.5, 11, 8, 11, 10, 9, 7, 6]
 
     # spider_live = True
 
-    def __init__(self, keyword=None, cities=None, work_year=''):
+    def __init__(self, keyword='', cities='', work_year=''):
         self.keyword = keyword
         self.cities = cities
         self.work_year = work_year
+
+        self.urls_list = []
+        self.__company_list = []
+        self.__jobs_list = []
+        self.__positionId = []
+        self.__position_result = []
 
     def __post_index_data(self, url=None, pn=None):
         """请求url,返回json格式数据,如果返回正确结果,则继续解析数据;"""
@@ -218,9 +260,6 @@ class ZhiLian_Spdier(object):
             print("zhilian---------拒绝访问了-------------")
 
 
-import grequests
-
-
 class ShiXi_Spider(object):
     """
     Spider about Shixiseng
@@ -230,35 +269,36 @@ class ShiXi_Spider(object):
     def __init__(self, keyword='', city=''):
         self.k = keyword
         self.city = city
-        self.job_urls = []
         self.index_job_html = []
         self.res = []
-        self.every_job_info = []
+        self.__job_urls = []
+        self.__every_job_info = []
 
     def _get_jobs_list(self):
         try:
             url = "http://www.shixiseng.com/interns/st-intern_?k={0}&t=zj&p={1}"
             index_urls = [url.format(self.k, p) for p in range(1, self.page)]
-            self.index_job_html = self.__grequests_api(index_urls)
+            return self.__grequests_api(index_urls)
             # print(self.index_job_urls[0].text)
-            return True
         except Exception as e:
             logger.error("_get_jobs_list {0}".format(e))
-            return False
+            return None
 
     def __grequests_api(self, url_list):
         tasks = [grequests.get(url) for url in url_list]
         return grequests.map(tasks, size=6)
 
-    def _parse_job_url_html(self):
-        for html in self.index_job_html:
-            pattern = r'<a class="name" href="(.*?)" target="_blank"'
-            result = re.findall(pattern, html.text, re.S)
-            url = "http://www.shixiseng.com"
-            for suffix_url in result:
-                parse_url = url + suffix_url
-                self.job_urls.append(parse_url)
-        return True
+    def _parse_job_url_html(self, index_job_html):
+        if index_job_html is not None:
+            for html in index_job_html:
+                pattern = r'<a class="name" href="(.*?)" target="_blank"'
+                result = re.findall(pattern, html.text, re.S)
+                url = "http://www.shixiseng.com"
+                for suffix_url in result:
+                    parse_url = url + suffix_url
+                    self.__job_urls.append(parse_url)
+            return True
+        return False
 
     def _parse_job_info(self):
         for html in self.res:
@@ -270,7 +310,7 @@ class ShiXi_Spider(object):
                 job_city = re.findall(reg, html.text)[0]
                 reg = r'<span class="job_academic">(.*?)</span>'
                 job_edu = re.findall(reg, html.text)[0]
-                self.every_job_info.append({
+                self.__every_job_info.append({
                     'job_name': job_name,
                     'job_city': job_city,
                     'job_limit': job_edu
@@ -287,18 +327,31 @@ class ShiXi_Spider(object):
     #         print("数据存储成功")
 
     def start_spider(self):
-        if self._get_jobs_list() and self._parse_job_url_html():
-            self.res = self.__grequests_api(self.job_urls)
+        if self._parse_job_url_html(self._get_jobs_list()):
+            self.res = self.__grequests_api(self.__job_urls)
             if self._parse_job_info():
+                format_str = "Shixiseng_spider  have pull {0} pages ,data len is {1}"
                 logger.info(
-                    "Shixiseng_spider  have pull {0} pages ,data len is {1}".format(self.page - 1,
-                                                                                    len(self.every_job_info)))
-                print(self.every_job_info)
-                print(self.job_urls)
+                    format_str.format(
+                        self.page - 1, len(self.__every_job_info))
+                )
+                print(self.__every_job_info)
+                print(self.__job_urls)
             return True
         return False
 
+    @property
+    def job_info(self):
+        return (self.__every_job_info, self.__job_urls)
 
-if __name__ == '__main__':
-    spider = ShiXi_Spider("python")
-    spider.start_spider()
+
+class ZhiLianDataStore():
+    """
+        save data from zhilian to mongodb
+    """
+
+    HOST = "localhost"
+    PORT = 27017
+
+    def __init__(self):
+        pass

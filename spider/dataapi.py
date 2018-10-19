@@ -74,6 +74,9 @@ class LaGouDateStore(object):
     def save_result(self):
         return self.SAVE_OVER
 
+
+
+
 #
 # if __name__ == '__main__':
 #     key = ['python', 'java', "C++","PHP", "docker","golang","web前端"]

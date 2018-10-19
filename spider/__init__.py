@@ -3,4 +3,4 @@
 
 
 from .dataapi import LaGouDateStore
-from .spider_util import spider
+from .spider_util import ShiXi_Spider
