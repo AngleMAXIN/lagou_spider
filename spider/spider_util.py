@@ -1,15 +1,17 @@
 # !/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-import re
-import time
 import json
 import random
-import requests
+import re
+import time
+
 import grequests
+import requests
+from lxml import etree
+
 from .config import get_header, post_headers, get_cookie
 from .log import logger
-from lxml import etree
 
 
 class Spider(object):
@@ -18,12 +20,13 @@ class Spider(object):
     def __init__(self, keyword='', city=''):
         self.keyword = keyword
         self.city = city
+
         # 页数
         self.page = 5
         # 最终爬取的职位信息,元素类型为字典
         self._jobs_info_list = []
         # 所有职位的url
-        self._jobs_url_list = 'ok'
+        self._jobs_url_list = []
 
     def start_spider(self):
         '''
@@ -31,17 +34,30 @@ class Spider(object):
         '''
         pass
 
-    def _parse_job_html(self):
+    def init_urls(self):
         '''
-            解析每一页的职位信息
+        初始化url,包括首页url以及每一个职位url
+        :return:
         '''
         pass
 
-    def _get_index_jobs_list(self):
+    def _parse_index_data(self):
         '''
-            获取职位的url以及职位名称,薪资,经验,学历
+        解析首页数据,拉钩和智联属于解析json,实习僧属于解析html
+        :return:
         '''
-        print("hello")
+
+    def _parse_detail_html(self):
+        '''
+        解析每一页的职位信息
+        '''
+        pass
+
+    def _get_index_jobs_list(self, url):
+        '''
+        根据首页的url,获取每一页所有职位的url以及职位名称,薪资,经验,学历
+        '''
+        pass
 
     @property
     def jobs_info_list(self):
@@ -54,7 +70,7 @@ class Spider(object):
         return self._jobs_url_list
 
 
-class LaGou_Spider(object):
+class LaGou_Spider(Spider):
     """
     spider of LaGou
     """
@@ -64,8 +80,9 @@ class LaGou_Spider(object):
     # spider_live = True
 
     def __init__(self, keyword='', cities='', work_year=''):
-        self.keyword = keyword
-        self.cities = cities
+        super().__init__(keyword,cities)
+        # self.keyword = keyword
+        # self.cities = cities
         self.work_year = work_year
 
         self.urls_list = []
@@ -75,7 +92,7 @@ class LaGou_Spider(object):
         self.__position_result = []
 
     def __post_index_data(self, url=None, pn=None):
-        """请求url,返回json格式数据,如果返回正确结果,则继续解析数据;"""
+        """post请求url,返回json格式数据,如果返回正确结果,则继续解析数据;"""
         OVER = 2
         data = {'first': 'true', 'pn': pn, 'kd': self.keyword}
         while OVER > 0:
@@ -237,8 +254,13 @@ class ZhiLian_Spdier(object):
             # print("******************",self.numfound)
             jobs_results_list = r_json['data']['results']
             for job_info in jobs_results_list:
-                # positionURL : 详情页 / url salary : 薪酬 / updateDate : 发布时间
-                # job_info['workingExp']['name'] : 经验要求 / eduLevel : 学历 / name : 职位名称
+                # positionURL : 详情页
+                # url salary : 薪酬
+                # updateDate : 发布时间
+                # job_info['workingExp']['name'] : 经验要求
+                # eduLevel : 学历
+                # name : 职位名称
+                # city : 城市
                 self.job_info.append({
                     'jobName': job_info['jobName'],
                     'salary': job_info['salary'],
@@ -345,13 +367,13 @@ class ShiXi_Spider(object):
         return (self.__every_job_info, self.__job_urls)
 
 
-class ZhiLianDataStore():
-    """
-        save data from zhilian to mongodb
-    """
-
-    HOST = "localhost"
-    PORT = 27017
-
-    def __init__(self):
-        pass
+# class ZhiLianDataStore():
+#     """
+#         save data from zhilian to mongodb
+#     """
+#
+#     HOST = "localhost"
+#     PORT = 27017
+#
+#     def __init__(self):
+#         pass

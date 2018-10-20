@@ -29,7 +29,42 @@
 # from spider import DateStore
 
 # da = DateStore()
+# import random
 
-import sys
+class A:
+    def _a(self, data):
+        print(data)
 
-print(sys.path)
+    def ab(self, data):
+        return data
+
+    def start(self):
+        data_list = [i for i in range(10000)]
+        for i in range(100):
+
+            self._a(self.ab(data_list))
+
+    # def seeet(self):
+    #     p = self.ab()
+    #     self._a(p)
+
+
+# class A:
+#     def _a(self, data):
+#         print(data)
+#
+#     def ab(self, data):
+#         self._a(data)
+#
+#     def start(self):
+#         data_list = [i for i in range(10000)]
+#         for i in range(100):
+#             self.ab(data_list)
+
+    # def seeet(self):
+    #     p = self.ab()
+    #     self._a(p)
+
+
+a = A()
+a.start()
