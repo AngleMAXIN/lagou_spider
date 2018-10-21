@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-from FlyJob import create_app
+from ..FlyJob import create_app
 
 app = create_app()
 

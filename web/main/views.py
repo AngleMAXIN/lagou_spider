@@ -24,11 +24,11 @@ def index():
 #     cities = [u"北京"]
 #     # is_ok = start.spider_start(key, cities)
 #     # if is_ok:
-#     return redirect(url_for('main.data_show'))
+#     return redirect(url_for('main.echarts'))
 #     # return "sorry fialed"
 
 
-@main.route('/data_show/<keyword>')
+@main.route('/echarts/<keyword>')
 def data_show(keyword):
     key_words = ['salary', 'workYear', 'education', 'city', 'data']
     # print(keyword)
