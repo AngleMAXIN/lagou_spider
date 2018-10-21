@@ -6,12 +6,16 @@ import random
 import re
 import time
 
+import gevent
 import grequests
 import requests
+from gevent import monkey
 from lxml import etree
 
 from .config import get_header, post_headers, get_cookie
 from .log import logger
+
+monkey.patch_all()
 
 
 class Spider(object):
@@ -27,6 +31,8 @@ class Spider(object):
         self._jobs_info_list = []
         # 所有职位的url
         self._jobs_url_list = []
+        # 所有的职位技能信息
+        self._jobs_limit_list = []
 
     def start_spider(self):
         '''
@@ -59,6 +65,11 @@ class Spider(object):
         '''
         pass
 
+    def _grequests_detail_html(self):
+        # 只对职位的url进行异步爬取,所以只用self._jobs_url_list
+        task = [grequests.get(url) for url in self._jobs_url_list]
+        return grequests.map(task, size=6)
+
     @property
     def jobs_info_list(self):
         # 返回最终职位数据
@@ -68,6 +79,11 @@ class Spider(object):
     def jobs_url_list(self):
         # 返回职位的url
         return self._jobs_url_list
+
+    @property
+    def jobs_limit_list(self):
+        # 返回职位的技能要求数据
+        return self._jobs_limit_list
 
 
 class LaGou_Spider(Spider):
@@ -80,7 +96,7 @@ class LaGou_Spider(Spider):
     # spider_live = True
 
     def __init__(self, keyword='', cities='', work_year=''):
-        super().__init__(keyword,cities)
+        super().__init__(keyword, cities)
         # self.keyword = keyword
         # self.cities = cities
         self.work_year = work_year
@@ -115,7 +131,7 @@ class LaGou_Spider(Spider):
         time.sleep(1)
         if result.status_code == 200:
             selector = etree.HTML(result.text)
-            r = selector.xpath('//*[@id="job_detail"]/dd[2]/div/p/text()', )
+            r = selector.xpath('//*[@id="job_detail"]/dd[2]/div/p/text()')
             requests_list = dict(data=r)
             return requests_list
         return None
@@ -219,28 +235,34 @@ class LaGou_Spider(Spider):
         return self.__position_result
 
 
-class ZhiLian_Spdier(object):
+class ZhiLian_Spdier(Spider):
     """
     spider of zhilian
     """
 
     def __init__(self, keyword='', cityId=530, page=0):
+        # 530默认北京
         self.numfound = 120
-
-        self.keyword = keyword
-        self.cityId = cityId
+        super().__init__(keyword,cityId)
+        # self.keyword = keyword
+        # self.cityId = cityId
         self.page = page
         self.job_info = []
+        self._jobs_url_list = []
+        self.time_xpath = []
 
     def start_spider(self):
-        for page_number in range(4):
+        for page_number in range(2):
             # print("===============",self.numfound//60)
             self.__get_jobs_list(page_number)
+        html_list = self._grequests_detail_html()
+        self.__gevent_parse(html_list)
+
 
     def __get_jobs_list(self, page=0):
         url = "https://fe-api.zhaopin.com/c/i/sou"
         payload = {'pageSize': 60,
-                   'cityId': self.cityId,  # city id
+                   'cityId': self.city,  # city id
                    'education': -1,
                    'kw': self.keyword,  # keyword
                    'kt': 3,
@@ -261,26 +283,66 @@ class ZhiLian_Spdier(object):
                 # eduLevel : 学历
                 # name : 职位名称
                 # city : 城市
-                self.job_info.append({
+                url = job_info['positionURL']
+                self._jobs_url_list.append(url)
+                self._jobs_info_list.append({
                     'jobName': job_info['jobName'],
                     'salary': job_info['salary'],
                     'city': job_info['city']['display'],
                     'updateDate': job_info['updateDate'],
-                    'positionURL': job_info['positionURL'],
+                    'positionURL': url,
                     'eduLevel': job_info['eduLevel']['name'],
                     'workingExp': job_info['workingExp']['name']
                 })
-                print(
-                    job_info['positionURL'],
-                    job_info['salary'],
-                    job_info['updateDate'],
-                    job_info['workingExp']['name'],
-                    job_info['eduLevel']['name'],
-                    job_info['city']['display']
-                )
+
+                # print(
+                #     job_info['positionURL'],
+                #     job_info['salary'],
+                #     job_info['updateDate'],
+                #     job_info['workingExp']['name'],
+                #     job_info['eduLevel']['name'],
+                #     job_info['city']['display']
+                # )
         else:
             print("zhilian---------拒绝访问了-------------")
 
+    def _grequests_detail_html(self):
+        # 只对职位的url进行异步爬取,所以只用self._jobs_url_list
+        task = [grequests.get(url) for url in self._jobs_url_list]
+        return grequests.map(task, size=6)
+
+    def _parse_detail_html(self, html):
+        # 使用xpath对html进行解析
+        start = time.time()
+        selector = etree.HTML(html.text)
+        # print(html.text)
+        # // *[ @ id = "job_detail"] / dd[2] / div / p[2]
+        # // *[ @ id = "job_detail"] / dd[2] / div / p / text()
+        # / html / body / div[1] / div[3] / div[5] / div[1] / div[3] / div[1] / p[1]
+        # / html / body / div[1] / div[3] / div[5] / div[1] / div[3] / div[2] / p
+        # / html / body / div[1] / div[3] / div[5] / div[1] / div[3] / div[1] / p[1]
+        # / html / body / div[1] / div[3] / div[5] / div[1] / div[3] / div[1] / p[1]
+        # / html / body / div[1] / div[3] / div[5] / div[1] / div[3] / div[1] / p[2]
+        # / html / body / div[1] / div[3] / div[5] / div[1] / div[3] / div[1] / p[5]
+        # /html/body/div[1]/div[3]/div[5]/div[1]/div[3]/div[1]/p[3]
+
+        r = selector.xpath("//div[@class='pos-ul']/p/text()")
+        print(r)
+        end = time.time() - start
+        self.time_xpath.append(end)
+        self._jobs_limit_list.append(dict(data=r))
+
+    def __gevent_parse(self, html_list):
+        # 使用gevent协程库对解析html进行异步执行
+        thread = []
+        for html in html_list:
+            # thread.append(gevent.spawn(self._parse_detail_html, html))
+            self._parse_detail_html(html)
+        # gevent.joinall(thread)
+
+    @property
+    def time_xpath_api(self):
+        return sum(self.time_xpath)
 
 class ShiXi_Spider(object):
     """
@@ -365,7 +427,6 @@ class ShiXi_Spider(object):
     @property
     def job_info(self):
         return (self.__every_job_info, self.__job_urls)
-
 
 # class ZhiLianDataStore():
 #     """

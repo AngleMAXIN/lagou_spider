@@ -12,7 +12,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 # 第二步，创建一个handler，用于写入日志文件
 rq = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-log_path = os.path.dirname(os.getcwd()) + '/lagou_spider/log/'
+log_path = os.path.dirname(os.getcwd()) + '/log/'
 log_name = "spider.log"
 fh = logging.FileHandler(log_path + log_name, mode='a')
 fh.setLevel(logging.INFO)  # 输出到file的log等级的开关
