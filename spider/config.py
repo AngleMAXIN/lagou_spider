@@ -2,6 +2,8 @@
 # -*- coding:utf-8 -*-
 import random
 
+
+ZhiLian_succeed = "Zhilian_spider is succeed, keyword:{0},city:{1},employment_type:{2}"
 post_headers = [{
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36',
     'Referer': 'https://www.lagou.com/jobs/list_Java?px=default&city=%E5%8C%97%E4%BA%AC',

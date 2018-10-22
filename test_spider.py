@@ -17,9 +17,9 @@ def test():
     zhilian = ZhiLian_Spdier('python')
     zhilian.start_spider()
     print(zhilian.time_xpath_api)
-    print(len(zhilian.jobs_url_list),len(zhilian.jobs_limit_list))
-    printf(zhilian.jobs_limit_list)
-    printf(zhilian.jobs_url_list)
+    print(len(zhilian.jobs_info_list),len(zhilian.jobs_limit_list))
+    # printf(zhilian.jobs_limit_list)
+    # printf(zhilian.jobs_url_list)
 
     # printf(zhilian.jobs_url_list)
     # printf(zhilian.jobs_info_list)

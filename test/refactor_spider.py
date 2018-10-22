@@ -46,7 +46,7 @@ l = [i for i in range(500)]
 uuuu = []
 def prin(i):
     # gevent.sleep(2)
-    time.sleep(random.random()*0.004)
+    time.sleep(1)
     uuuu.append(i)
 
 def gevent_test(l):
@@ -58,7 +58,7 @@ def gevent_test(l):
 uu = []
 def prinl(i):
     # gevent.sleep(2)
-    time.sleep(random.random()*0.004)
+    time.sleep(1)
     uu.append(i)
 def no_gevent(l):
     for i in l:
