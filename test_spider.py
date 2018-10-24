@@ -1,4 +1,4 @@
-from spider import ZhiLian_Spdier
+from spider import ZhiLian_Spdier,ShiXi_Spider
 
 
 
@@ -9,20 +9,29 @@ def printf(daat):
 def test():
 
     keyword = 'python'
-    city = 530
+    city = '北京'
     # 实习 4
     # 不限 -1
-    employment_type = -1
 
-    zhilian = ZhiLian_Spdier('python')
-    zhilian.start_spider()
-    print(zhilian.time_xpath_api)
-    print(len(zhilian.jobs_info_list),len(zhilian.jobs_limit_list))
-    # printf(zhilian.jobs_limit_list)
-    # printf(zhilian.jobs_url_list)
+    shixi = ShiXi_Spider(keyword,city)
+    shixi.start_spider()
+    # zhilian = ZhiLian_Spdier(keyword,city)
+    # zhilian.start_spider()
 
-    # printf(zhilian.jobs_url_list)
+    printf(shixi.jobs_info_list)
     # printf(zhilian.jobs_info_list)
 
 if __name__ == '__main__':
     test()
+
+
+    self._jobs_info_list.append({
+                    'companyname': job_com_name,
+                    'company_url': com_base_url + job_com_url,
+                    'positionurl': base_url + job_url,
+                    'jobname': job_name,
+                    'city': job_city,
+                    'edulevel': job_edu,
+                    'limit': limit ,
+                    'com_logo':com_logo
+                })

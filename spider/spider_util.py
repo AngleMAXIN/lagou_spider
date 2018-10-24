@@ -12,7 +12,7 @@ import requests
 from gevent import monkey
 from lxml import etree
 
-from .config import get_header, post_headers, get_cookie, ZhiLian_succeed
+from .config import get_header, post_headers, get_cookie, succeed_format
 from .log import logger
 
 monkey.patch_all()
@@ -67,9 +67,9 @@ class Spider(object):
         '''
         pass
 
-    def _grequests_detail_html(self):
+    def _grequests_urls(self, jobs_url_list):
         # 只对职位的url进行异步爬取,所以只用self._jobs_url_list
-        task = [grequests.get(url) for url in self._jobs_url_list]
+        task = [grequests.get(url) for url in jobs_url_list]
         return grequests.map(task, size=6)
 
     @property
@@ -246,34 +246,45 @@ class ZhiLian_Spdier(Spider):
         # 530默认北京
         super().__init__(keyword, cityId, employment_type)
         self.numfound = 0
+        self.city = self.__city(cityId)
         self.job_info = []
         self._jobs_url_list = []
-        # self.time_xpath = 0
-        self.succeed = 0
-        xpath_str = '//*[@id="divMain"]/div/div/div[1]/div[2]/div[2]/div/div/p'
-        _xpath_str = "//div[@class='pos-ul']/p/text()"
-        __xpath_str = "//div[@class='pos-ul']/p/span/text()"
-        last_xpath_str = "//div[@class='pos-ul']/div/text()"
-        ll_xpath_str = "//p[@class='mt20']/text()"
-        self.xpath_list = [xpath_str, _xpath_str,
-                           __xpath_str, last_xpath_str, ll_xpath_str]
+
+        self.xpath_list = [
+            '//*[@id="divMain"]/div/div/div[1]/div[2]/div[2]/div/div/p',
+            "//div[@class='pos-ul']/p/text()",
+            "//div[@class='pos-ul']/p/span/text()",
+            "//div[@class='pos-ul']/div/text()",
+            "//p[@class='mt20']/text()"
+        ]
 
     def start_spider(self):
-
         # 确定页数
         self._get_num_page()
-        for page in range(3):
+        for page in range(2):
             r = self._get_index_jobs_list(page)
             if r is not None:
-                self._parse_index_data(r)
-        html_list = self._grequests_detail_html()
-        del self._jobs_url_list
-        self._parse_detail_html(html_list)
-        logger.info(ZhiLian_succeed.format(
-            self.keyword,
-            self.city,
-            self.employment_type
-        ))
+                urls_list = self._parse_index_data(r)
+        html_list = self._grequests_urls(urls_list)
+        if self._parse_detail_html(html_list):
+            logger.info(succeed_format.format(
+                self.keyword,
+                self.city,
+                self.employment_type,
+                spider='ZhiLian_spider',
+            ))
+        return
+
+    def __city(self,city):
+        city_dict = {
+            '全国':'489',
+            '北京':'530',
+            '上海':'538',
+            '杭州':'653',
+            '广州':'763',
+            '深圳':'765'
+        }
+        return city_dict[city]
 
     def _get_num_page(self):
         res = self._get_index_jobs_list()
@@ -303,7 +314,7 @@ class ZhiLian_Spdier(Spider):
             return None
 
     def _parse_index_data(self, r_json):
-
+        jobs_url_list = []
         jobs_results_list = r_json['data']['results']
         for job_info in jobs_results_list:
             # positionURL : 详情页
@@ -316,24 +327,19 @@ class ZhiLian_Spdier(Spider):
             # company_name : 公司名称
             url = job_info['positionURL']
 
-            self._jobs_url_list.append(url)
+            jobs_url_list.append(url)
             self._jobs_info_list.append({
-                'jobname': job_info['jobName'],
+                'positionurl': url,
                 'salary': job_info['salary'],
+                'jobname': job_info['jobName'],
                 'city': job_info['city']['display'],
                 'updatedate': job_info['updateDate'],
-                'positionurl': url,
-                'company_name': job_info['company']['name'],
                 'edulevel': job_info['eduLevel']['name'],
-                'workingexp': job_info['workingExp']['name']
+                'companyname': job_info['company']['name'],
+                'company_url':job_info['company']['url'],
+                'workingexp': job_info['workingExp']['name']    
             })
-
-    def _grequests_detail_html(self):
-
-        # 只对职位的url进行异步爬取,所以只用self._jobs_url_list
-
-        task = [grequests.get(url) for url in self._jobs_url_list]
-        return grequests.map(task, size=6)
+        return jobs_url_list
 
     def _parse_detail_html(self, html_list):
         # 使用xpath对html进行解析
@@ -342,9 +348,10 @@ class ZhiLian_Spdier(Spider):
             for x_str in self.xpath_list:
                 r = selector.xpath(x_str)
                 if len(r) != 0:
-                    self.succeed += 1
                     self._jobs_limit_list.append(dict(data=r))
                     break
+        del(self.xpath_list)
+        return True
 
     @property
     def time_xpath_api(self):
@@ -355,27 +362,27 @@ class ShiXi_Spider(Spider):
     """
     Spider about Shixiseng
     """
-    
 
-    def __init__(self, keyword='', city=''):
+    def __init__(self, keyword='', city='', employment_type='实习'):
         self.k = keyword
-        super().__init__(keyword, city)
-        self.page = 8
-        # self.city = city
-        # self.index_job_html = []
-        # self.res = []
-        # self.__job_urls = []
-        # self.__every_job_info = []
+        super().__init__(keyword, city, employment_type)
+        self.page = 2
 
     def start_spider(self):
-        
         html_list = self._get_index_jobs_list()
-        ok = self._parse_index_data(html_list)
-        if ok:
-            html_list = super().__grequests_api()
-            self._parse_detail_html(html_list)
-
-
+        urls_list = self._parse_index_data(html_list)
+        if urls_list is not None:
+            html_list = self._grequests_urls(urls_list)
+            print(len(html_list))
+            ok = self._parse_detail_html(html_list)
+            if ok:
+                logger.info(succeed_format.format(
+                    self.keyword,
+                    self.city,
+                    self.employment_type,
+                    spider='Shixi_spider',
+                ))
+                return True
 
     def __init_urls(self):
         city_dict = {
@@ -391,89 +398,56 @@ class ShiXi_Spider(Spider):
         return [url.format(p) for p in range(1, self.page)]
 
     def _get_index_jobs_list(self):
-        # try:
         index_urls = self.__init_urls()
-        return self.__grequests_api(index_urls)
-            # print(self.index_job_urls[0].text)
-        # except Exception as e:
-        #     logger.error("ShixiSeng_spider requests failed:{0}".format(e))
-        #     return None
-
-    def __grequests_api(self, url_list):
-        tasks = [grequests.get(url) for url in url_list]
-        return grequests.map(tasks, size=6)
+        return self._grequests_urls(index_urls)
 
     def _parse_index_data(self, index_job_html):
+        jobs_url_list = []
         if index_job_html is not None:
             for html in index_job_html:
                 pattern = r'<a class="name" href="(.*?)" target="_blank"'
                 result = re.findall(pattern, html.text, re.S)
-                url = "http://www.shixiseng.com"
-                for suffix_url in result:
-                    parse_url = url + suffix_url
-                    self._jobs_url_list.append(parse_url)
-            return True
-        return False
+                base_url = "http://www.shixiseng.com"
+                if len(result) != 0:
+                    for url in result:
+                        jobs_url_list.append(base_url + url)
+                else:
+                    break
+            return jobs_url_list
+        return None
 
-    def decode_word(self,word_tutle):
-        pass
-        
-    def _parse_detail_html(self):
-        for html in self.res:
+    def _parse_detail_html(self, res):
+        base_url = "http://www.shixiseng.com"
+        com_base_url = "https://www.shixiseng.com/com/"
+        for html in res:
             try:
-                # if html.status_code == 200:
+                reg = r'<a href="/company/detail/(.*?)" target="_blank" class="com-con">'
+                job_com_url = re.findall(reg, html.text)[0]
+                reg = r'<div class="job_com_name">(.*?)</div>'
+                job_com_name = re.findall(reg, html.text)[0]
+                reg = r'next=(.*?)" target="_blank" data-sa="click"'
+                job_url = re.findall(reg, html.text)[0]
                 reg = r'<div class="new_job_name" title="(.*?)">'
                 job_name = re.findall(reg, html.text)[0]
                 reg = r'<span title="(.*?)" class="job_position">'
                 job_city = re.findall(reg, html.text)[0]
-                reg = r'<span class="job_money cutom_font">(.*?)/天</span>'
-                job_salary = re.findall(re, html.text)[0] # 解码
-                reg = r'<span class="job_time cutom_font">实习(.*?)个月</span>'
-                job_time = re.findall(reg, html.text)    # 解码
                 reg = r'<span class="job_academic">(.*?)</span>'
                 job_edu = re.findall(reg, html.text)[0]
-                self.__every_job_info.append({
-                    'job_name': job_name,
-                    'job_city': job_city,
-                    'job_limit': job_edu,
-
+                reg = r'<div class="job_detail">(.*?)</div>'
+                limit = re.findall(reg, html.text,re.S)[0]
+                reg = r'"bdPic":"(.*?)"'
+                com_logo = re.findall(reg,html.text)[0]
+                self._jobs_info_list.append({
+                    'companyname': job_com_name,
+                    'company_url': com_base_url + job_com_url,
+                    'positionurl': base_url + job_url,
+                    'jobname': job_name,
+                    'city': job_city,
+                    'edulevel': job_edu,
+                    'limit': limit ,
+                    'com_logo':com_logo
                 })
             except Exception as e:
-                logger.error("__parse_job_info {0}".format(e))
+                logger.error("ShiXiSeng_spider parse html {0}".format(e))
                 return False
         return True
-
-    # def Save_Mongo(result):
-    #     client = pymongo.MongoClient(MongoUrl, connect=False)
-    #     db = client[MongoDB]
-    #     if db[MongoTable].insert(result):
-    #         print("数据存储成功")
-
-    def start_spider(self):
-        if self._parse_job_url_html(self._get_jobs_list()):
-            self.res = self.__grequests_api(self.__job_urls)
-            if self._parse_job_info():
-                format_str = "Shixiseng_spider  have pull {0} pages ,data len is {1}"
-                logger.info(
-                    format_str.format(
-                        self.page - 1, len(self.__every_job_info))
-                )
-                print(self.__every_job_info)
-                print(self.__job_urls)
-            return True
-        return False
-
-    @property
-    def job_info(self):
-        return (self.__every_job_info, self.__job_urls)
-
-# class ZhiLianDataStore():
-#     """
-#         save data from zhilian to mongodb
-#     """
-#
-#     HOST = "localhost"
-#     PORT = 27017
-#
-#     def __init__(self):
-#         pass
