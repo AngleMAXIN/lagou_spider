@@ -6,13 +6,12 @@ import random
 import re
 import time
 
-import gevent
 import grequests
 import requests
 from gevent import monkey
 from lxml import etree
 
-from .config import get_header, post_headers, get_cookie, succeed_format
+from .config import get_header, post_header, get_cookie, succeed_format
 from .log import logger
 
 monkey.patch_all()
@@ -97,144 +96,124 @@ class LaGou_Spider(Spider):
 
     # spider_live = True
 
-    def __init__(self, keyword='', cities='', work_year=''):
-        super().__init__(keyword, cities)
+    def __init__(self, keyword='', cities='', employment_type="不限"):
+        super().__init__(keyword, cities, employment_type)
         # self.keyword = keyword
-        # self.cities = cities
-        self.work_year = work_year
-
+        # self.cities = citiesn
+        # self.work_year = work_year
+        self.numpage = 1
+        self.post_url = ""
         self.urls_list = []
+        self.__jobs_parse_list = []
         self.__company_list = []
         self.__jobs_list = []
         self.__positionId = []
         self.__position_result = []
 
-    def __post_index_data(self, url=None, pn=None):
+    def start_spider(self):
+        # 初始化url
+        self.__init_url()
+        # 获取数据量
+        self.__get_num_page()
+        self.__parse_jobs_field()
+        for pn in range(1):
+            r = self._get_index_jobs_list(pn)
+            self._parse_index_data(r)
+            self._parse_detail_data()
+        logger.info(succeed_format.format(
+            self.keyword,
+            self.city,
+            self.employment_type,
+            spider='LaGou_spider',
+        ))
+
+    def __init_url(self):
+        # 根据是否实习和诚实构造post url
+        if self.employment_type == "实习":
+            url = "https://www.lagou.com/jobs/positionAjax.json?px=new&gx={0}&city={1}&isSchoolJob=1".format(
+                self.employment_type, self.city)
+        else:
+            # 非实习
+            url = "https://www.lagou.com/jobs/positionAjax.json?px=new&city={0}".format(
+                self.city)
+        self.post_url = url
+
+    def __parse_jobs_field(self):
+
+        jobs_parse_list = [
+            'salary',
+            'education',
+            'companyId',
+            'positionId',
+            'companyLogo',
+            'positionName',
+            'companyFullName',
+        ]
+
+        if self.employment_type != "实习":
+            jobs_parse_list.append('workYear')
+        self.__jobs_parse_list = jobs_parse_list
+
+    def __get_num_page(self):
+        res = self._get_index_jobs_list()
+        self.numpage = res['content']['positionResult']['totalCount']
+
+    def _get_index_jobs_list(self, pn=1):
         """post请求url,返回json格式数据,如果返回正确结果,则继续解析数据;"""
-        OVER = 2
+        OVER = 3
         data = {'first': 'true', 'pn': pn, 'kd': self.keyword}
         while OVER > 0:
             result = requests.post(
-                url, data=data, headers=post_headers()).json()
+                self.post_url, data=data, headers=post_header()).json()
             OVER -= 1
-
             time.sleep(random.choice(self.SLEEP_TIME))
             if result['success'] is True:
-                self.__data_parser(result)
-                break
+                # print(result)
+                return result
             else:
-                print("lagou---------拒绝访问了-------------")
+                logger.warning(
+                    "LaGou_Spider request failed at page {0}".format(pn))
 
-    def __get_detail_data(self, position_id=None):
+    def _parse_index_data(self, data):
+        # 解析json数据,获取每一个职位的url_id,以及每一个职位的信息
+        try:
+            result = data['content']['positionResult']['result']
+            for r in result:
+                jobs = {key: r[key] for key in self.__jobs_parse_list}
+                self.__positionId.append(r['positionId'])
 
-        url = "https://www.lagou.com/jobs/{}.html".format(str(position_id))
-        result = requests.get(
-            url, headers=get_header, cookies=get_cookie)
-        time.sleep(1)
-        if result.status_code == 200:
-            selector = etree.HTML(result.text)
-            r = selector.xpath('//*[@id="job_detail"]/dd[2]/div/p/text()')
-            requests_list = dict(data=r)
-            return requests_list
+                self._jobs_info_list.append(jobs)
+                # print(self._jobs_info_list)
+        except KeyError as e:
+            logger.error("Lagou_Spider _parse_index_data failed ", e)
+
+    def _get_detail_html(self, url_list):
+        html_list = []
+        for url in url_list:
+            html = requests.get(url, headers=get_header, cookies=get_cookie)
+            if html.status_code == 200:
+                html_list.append(html)
+        return html_list
+
+    def _parse_detail_data(self):
+        url_list = []
+        for id in self.__positionId:
+            url = "https://www.lagou.com/jobs/{0}.html".format(str(id))
+            url_list.append(url)
+        # print(url_list)
+        html_list = self._get_detail_html(url_list)
+
+        try:
+            for html in html_list:
+                selector = etree.HTML(html.text)
+                # print(html.text)
+                r = selector.xpath('//*[@id="job_detail"]/dd[2]/div/p/text()')
+                # print("----",r)
+                self._jobs_limit_list.append(dict(data=r))
+        except KeyError as e:
+            logger.error("Lagou_Spider __get_detail_data failed ", e)
+            pass
         return None
-
-    def __init_url(self):
-        """
-        根据有无提供城市选项,构造请求的url,如果没有提供,就默认在全国范围;
-        如果有,就具体构造出请求的url
-        """
-        if self.cities[0] == "全国":
-            if self.work_year == '':
-                url = "https://www.lagou.com/jobs/positionAjax.json? \
-                        px=default"
-            else:
-                url = "https://www.lagou.com/jobs/positionAjax.json? \
-                        px=default&gx={0}&isSchoolJob=1".format(self.work_year)
-            self.urls_list.append(url)
-        else:
-            for city in self.cities:
-                if self.work_year == '':
-                    url = "https://www.lagou.com/jobs/positionAjax.json? \
-                            px=default&city={0}".format(city)
-                else:
-                    url = "https://www.lagou.com/jobs/positionAjax.json? \
-                    px=default&gx={0}city={1}&isSchoolJob=1".format(self.work_year, city)
-                self.urls_list.append(url)
-
-    def __info_list(self):
-
-        comy_list = ['financeStage', 'industryField']
-        jobs_list = ['positionName', 'firstType',
-                     'salary', 'education']
-        # print(self.cities[0], self.work_year)
-
-        if self.cities[0] == "全国":
-            if self.work_year == '':
-                # 全国 经验不限
-                # print("全国 经验不限")
-                comy_list.append('city')
-                jobs_list.append('workYear')
-            else:
-                # 全国 应届或实习
-                # print("全国 应届或实习")
-                comy_list.append('city')
-
-        else:
-            if self.work_year == '':
-                # 指定地区 经验不限
-                jobs_list.append('workYear')
-            # else:
-            # 指定地区 应届或实习
-
-        return comy_list, jobs_list
-
-    def __data_parser(self, data):
-        """
-        接受请求返回的正确格式的数据,并一步获取需要的数据
-        """
-        result = data['content']['positionResult']['result']
-        comy_list, jobs_list = self.__info_list()
-        for r in result:
-            comy = {key: r[key] for key in comy_list}
-            jobs = {key: r[key] for key in jobs_list}
-            position_id = r['positionId']
-
-            self.__positionId.append(position_id)
-            self.__company_list.append(comy)
-            self.__jobs_list.append(jobs)
-
-    def get_post_id_data(self):
-        posts_len = len(self.__positionId)
-        i = 1
-        print(" ")
-        for post_id in self.__positionId:
-            i += 1
-            info = self.__get_detail_data(post_id)
-            self.__position_result.append(info)
-            print("\r" + "had download  {:.2%}".format(i / posts_len), end="")
-
-    def get_urls_data(self):
-        for url in self.urls_list:
-            for pn in range(1, self.__page_num + 1):
-                print(url, pn)
-                self.__post_index_data(url, pn)
-
-    def start(self):
-        self.__init_url()
-        self.get_urls_data()
-        self.get_post_id_data()
-
-    @property
-    def company_result(self):
-        return self.__company_list
-
-    @property
-    def jobs_result(self):
-        return self.__jobs_list
-
-    @property
-    def job_requests_list(self):
-        return self.__position_result
 
 
 class ZhiLian_Spdier(Spider):
@@ -265,24 +244,24 @@ class ZhiLian_Spdier(Spider):
             r = self._get_index_jobs_list(page)
             if r is not None:
                 urls_list = self._parse_index_data(r)
-        html_list = self._grequests_urls(urls_list)
-        if self._parse_detail_html(html_list):
-            logger.info(succeed_format.format(
-                self.keyword,
-                self.city,
-                self.employment_type,
-                spider='ZhiLian_spider',
-            ))
+                html_list = self._grequests_urls(urls_list)
+                self._parse_detail_html(html_list)
+        logger.info(succeed_format.format(
+            self.keyword,
+            self.city,
+            self.employment_type,
+            spider='ZhiLian_spider'
+        ))
         return
 
-    def __city(self,city):
+    def __city(self, city):
         city_dict = {
-            '全国':'489',
-            '北京':'530',
-            '上海':'538',
-            '杭州':'653',
-            '广州':'763',
-            '深圳':'765'
+            '全国': '489',
+            '北京': '530',
+            '上海': '538',
+            '杭州': '653',
+            '广州': '763',
+            '深圳': '765'
         }
         return city_dict[city]
 
@@ -336,8 +315,8 @@ class ZhiLian_Spdier(Spider):
                 'updatedate': job_info['updateDate'],
                 'edulevel': job_info['eduLevel']['name'],
                 'companyname': job_info['company']['name'],
-                'company_url':job_info['company']['url'],
-                'workingexp': job_info['workingExp']['name']    
+                'company_url': job_info['company']['url'],
+                'workingexp': job_info['workingExp']['name']
             })
         return jobs_url_list
 
@@ -350,7 +329,6 @@ class ZhiLian_Spdier(Spider):
                 if len(r) != 0:
                     self._jobs_limit_list.append(dict(data=r))
                     break
-        del(self.xpath_list)
         return True
 
     @property
@@ -394,7 +372,7 @@ class ShiXi_Spider(Spider):
             "杭州": "330100"
         }
         url = "http://www.shixiseng.com/interns/st-intern_c-" + \
-            city_dict[self.city] + "?k=" + self.keyword + "&t=zj&p={0}&t=zj"
+              city_dict[self.city] + "?k=" + self.keyword + "&t=zj&p={0}&t=zj"
         return [url.format(p) for p in range(1, self.page)]
 
     def _get_index_jobs_list(self):
@@ -434,9 +412,9 @@ class ShiXi_Spider(Spider):
                 reg = r'<span class="job_academic">(.*?)</span>'
                 job_edu = re.findall(reg, html.text)[0]
                 reg = r'<div class="job_detail">(.*?)</div>'
-                limit = re.findall(reg, html.text,re.S)[0]
+                limit = re.findall(reg, html.text, re.S)[0]
                 reg = r'"bdPic":"(.*?)"'
-                com_logo = re.findall(reg,html.text)[0]
+                com_logo = re.findall(reg, html.text)[0]
                 self._jobs_info_list.append({
                     'companyname': job_com_name,
                     'company_url': com_base_url + job_com_url,
@@ -444,8 +422,8 @@ class ShiXi_Spider(Spider):
                     'jobname': job_name,
                     'city': job_city,
                     'edulevel': job_edu,
-                    'limit': limit ,
-                    'com_logo':com_logo
+                    'limit': limit,
+                    'com_logo': com_logo
                 })
             except Exception as e:
                 logger.error("ShiXiSeng_spider parse html {0}".format(e))
