@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-import gevent
+import gevent,time
 from gevent import monkey
 from pymongo import MongoClient
 
@@ -13,57 +13,59 @@ class LaGouDateStore(object):
     HOST = "localhost"
     PORT = 27017
     SAVE_OVER = False
-    KET_WORDS_DB = 'keyword_list'
-    KET_WORDS_COLL = 'coll_keyword'
-    DB = 'job_info'
+    JOB_INFO_DB = 'jobs_info'
+    JOB_LIMIT_DB = 'jobs_limit'
+    DB = 'notes'
 
-    def __init__(self, coll_name, gx='', cities=None):
+    def __init__(self, coll_name, emp_type='', citiy=None):
         self.coll_name = coll_name
-        self.workyear = gx
-        self.cities = cities
+        self.emp_type = 'fw' if emp_type == '实习' else ''
+        self.city = city
 
         self.client = MongoClient(host=self.HOST, port=self.PORT)
-        self.keyword_db = self.client[self.KET_WORDS_DB]
-        self.coll_keywords = self.keyword_db[self.KET_WORDS_COLL]
-        self.db = self.client[self.DB]
-        self.coll_job = self.db[gx + coll_name + '_coll_job']
-        self.coll_company = self.db[gx + coll_name + '_coll_company']
-        self.coll_requests = self.db[gx + coll_name + '_coll_requests']
+        self.jobs_info_db = self.client[self.JOB_INFO_DB]
+        self.jobs_limit_db = self.client[self.JOB_LIMIT_DB]
+        self.other_db = self.client[self.DB]
+
+        self.jobs_info_coll = self.jobs_info_db[gx + coll_name]
+        self.jobs_limit_coll = self.jobs_limit_db[gx + coll_name]
+        self.keywords_coll = self.other_db['keywords']
+
         self.__save_keywords()
 
     def __save_keywords(self):
         keyword = {
             'keyword': self.coll_name,
-            'city': self.cities[0],
-            'workyear': self.workyear
+            'city': self.city,
+            'workyear': "实习" if self.emp_type == 'fw' else "不限"
+            'time': time.strftime("%Y-%m-%d %X", time.localtime())
         }
-        self.coll_keywords.insert(keyword)
+        self.keywords_coll.insert(keyword)
 
-    def __save_com(self, com_doc):
+    def _save_com(self, com_doc):
         if len(com_doc) == 0:
             return False
         for com in com_doc:
             self.coll_company.insert(com)
 
-    def __save_job(self, job_doc):
+    def _save_job(self, job_doc):
         if len(job_doc) == 0:
             return False
         for job in job_doc:
             self.coll_job.insert(job)
 
-    def __save_requests(self, request_doc):
+    def _save_requests(self, request_doc):
         if len(request_doc) == 0:
             return False
         for req in request_doc:
             self.coll_requests.insert(req)
 
-    def let_save(self, com_doc, job_doc, request_doc):
+    def let_save(self, job_doc, request_doc):
         # self.__save_keywords(self.coll_name)
         try:
             gevent.joinall([
-                gevent.spawn(self.__save_com, com_doc),
-                gevent.spawn(self.__save_job, job_doc),
-                gevent.spawn(self.__save_requests, request_doc)
+                gevent.spawn(self._save_job, job_doc),
+                gevent.spawn(self._save_requests, request_doc)
             ])
         except Exception as e:
             raise e

@@ -1,10 +1,10 @@
-_# !/usr/bin/env python
+# !/usr/bin/env python
 # -*- coding:utf-8 -*-
 
 import time
 
-from spider import DateStore
-from spider import Spider
+from spider import ZhiLian_Spdier, LaGou_Spider, ShiXi_Spider
+from data_api import LaGouDateStore
 
 
 def spider_start(key_word=None, cities=None, work_year=''):
@@ -39,6 +39,18 @@ def spider_start(key_word=None, cities=None, work_year=''):
         return True
     return False
 
+def _save_to_mongo(spider_list):
+    for spider in spider_list:
+        
+
+def _spider_train(keyword,city,employment_type):
+    _spiders = [LaGou_Spider,ZhiLian_Spdier,ShiXi_Spider]
+
+    for spider in _spiders:
+        spider(keyword,city, employment_type)
+        spider.start_spider()
+
+    return _spiders
 
 if __name__ == '__main__':
     keyword = input("input your keyword:")

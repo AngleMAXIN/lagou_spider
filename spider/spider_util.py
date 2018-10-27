@@ -91,7 +91,6 @@ class LaGou_Spider(Spider):
     """
     spider of LaGou
     """
-    __page_num = 30
     SLEEP_TIME = [1, 2, 14, 4, 5, 5.5, 11, 8, 11, 10, 9, 7, 6]
 
     # spider_live = True
@@ -103,8 +102,6 @@ class LaGou_Spider(Spider):
         # self.work_year = work_year
         self.numpage = 1
         self.post_url = ""
-        self.urls_list = []
-        self.__jobs_parse_list = []
         self.__positionId = []
 
     def start_spider(self):
@@ -112,8 +109,6 @@ class LaGou_Spider(Spider):
         self.__init_url()
         # 获取数据量
         self.__get_num_page()
-        # 生成解析字段
-        self.__parse_jobs_field()
         for pn in range(self.numpage // 15 + 1):
 
             r = self._get_index_jobs_list(pn)
@@ -138,22 +133,7 @@ class LaGou_Spider(Spider):
             url = base + "&city={0}".format(self.city)
         self.post_url = url
 
-    def __parse_jobs_field(self):
-
-        jobs_parse_list = [
-            'salary',
-            'education',
-            'companyId',
-            'positionId',
-            'companyLogo',
-            'positionName',
-            'companyFullName',
-        ]
-
-        if self.employment_type != "实习":
-            jobs_parse_list.append('workYear')
-        self.__jobs_parse_list = jobs_parse_list
-
+   
     def __get_num_page(self):
         res = self._get_index_jobs_list()
         number = res['content']['positionResult']['totalCount']
@@ -169,7 +149,6 @@ class LaGou_Spider(Spider):
             OVER -= 1
             time.sleep(random.choice(self.SLEEP_TIME))
             if result['success'] is True:
-
                 return result
             else:
                 logger.warning(
@@ -177,14 +156,26 @@ class LaGou_Spider(Spider):
 
     def _parse_index_data(self, data):
         # 解析json数据,获取每一个职位的url_id,以及每一个职位的信息
+        potstion_url = "https://www.lagou.com/jobs/{0}.html"
+        company_url = "https://www.lagou.com/gongsi/{0}.html"
+        com_logo_url = "https://www.lgstatic.com/thumbnail_120x120/{0}"
+
         try:
             result = data['content']['positionResult']['result']
             for r in result:
-                jobs = {key: r[key] for key in self.__jobs_parse_list}
                 self.__positionId.append(r['positionId'])
-
-                self._jobs_info_list.append(jobs)
-                # print(self._jobs_info_list)
+                self._jobs_info_list.append(
+                    'salary': r['salary'],
+                    'workYear': r['workYear'],
+                    'education': r['education'],
+                    'jobname': r['positionName'],
+                    'company_type': r['financeStage'],
+                    'company_size': r['companySize'],
+                    'company_name': r['companyFullName'],
+                    'company_url': , company_url.format(r['companyId']),
+                    'position_url': potstion_url.format(r['companyId']),
+                    'companyLogo': com_logo_url.format(r['companyLogo']),
+                )
         except KeyError as e:
             logger.error("Lagou_Spider _parse_index_data failed ", e)
 
@@ -302,17 +293,16 @@ class ZhiLian_Spdier(Spider):
             url = job_info['positionURL']
             jobs_url_list.append(url)
             self._jobs_info_list.append({
-                'positionurl': url,
+                'position_url': url,
                 'salary': job_info['salary'],
                 'jobname': job_info['jobName'],
                 'city': job_info['city']['display'],
-                'updatedate': job_info['updateDate'],
-                'edulevel': job_info['eduLevel']['name'],
-                'companyname': job_info['company']['name'],
+                'education': job_info['eduLevel']['name'],
+                'company_name': job_info['company']['name'],
                 'company_url': job_info['company']['url'],
                 'company_size': job_info['company']['size']['name']
                 'company_type': job_info['company']['type']['name']
-                'workingexp': job_info['workingExp']['name']
+                'workYear': job_info['workingExp']['name']
             })
         except KeyError as e:
             logger.error(
@@ -426,13 +416,13 @@ class ShiXi_Spider(Spider):
                 reg = r'"bdPic":"(.*?)"'
                 com_logo = re.findall(reg, html.text)[0]
                 self._jobs_info_list.append({
-                    'companyname': job_com_name,
+                    'company_name': job_com_name,
                     'company_url': com_base_url + job_com_url,
-                    'positionurl': base_url + job_url,
+                    'position_url': base_url + job_url,
                     'jobname': job_name,
                     'city': job_city,
-                    'edulevel': job_edu,
-                    'com_logo': com_logo
+                    'education': job_edu,
+                    'companyLogo': com_logo
                 })
                 self._jobs_limit_list.append(dict(data=limit))
             except Exception as e:
