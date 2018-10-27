@@ -1,10 +1,11 @@
 .idea
 __pycache__
 inspectionProfiles
-text
+test
 log
 keyword.json
 Fly Job.md
+test_spider.py
 terminal.glue
 *.xml
 *.iml

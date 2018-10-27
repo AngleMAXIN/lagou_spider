@@ -37,39 +37,43 @@
 # synchronous()
 # print('Asynchronous:')
 # asynchronous()
-import gevent
-import time
-import random
-from gevent import monkey; monkey.patch_all()
-l = [i for i in range(500)]
+# import gevent
+# import time
+# import random
+# from gevent import monkey; monkey.patch_all()
+# l = [i for i in range(500)]
 
-uuuu = []
-def prin(i):
-    # gevent.sleep(2)
-    time.sleep(1)
-    uuuu.append(i)
+# uuuu = []
+# def prin(i):
+#     # gevent.sleep(2)
+#     time.sleep(1)
+#     uuuu.append(i)
 
-def gevent_test(l):
-    th = []
-    for i in l:
-        th.append(gevent.spawn(prin,i))
-    gevent.joinall(th)
-    #     prin(i)
-uu = []
-def prinl(i):
-    # gevent.sleep(2)
-    time.sleep(1)
-    uu.append(i)
-def no_gevent(l):
-    for i in l:
-        prinl(i)
+# def gevent_test(l):
+#     th = []
+#     for i in l:
+#         th.append(gevent.spawn(prin,i))
+#     gevent.joinall(th)
+#     #     prin(i)
+# uu = []
+# def prinl(i):
+#     # gevent.sleep(2)
+#     time.sleep(1)
+#     uu.append(i)
+# def no_gevent(l):
+#     for i in l:
+#         prinl(i)
 
-u = time.time()
-gevent_test(l)
-print(uuuu)
-print("gevent",time.time() - u)
+# u = time.time()
+# gevent_test(l)
+# print(uuuu)
+# print("gevent",time.time() - u)
 
-u1 = time.time()
-no_gevent(l)
-print(uu)
-print("no_gevent",time.time() - u1)
+# u1 = time.time()
+# no_gevent(l)
+# print(uu)
+# print("no_gevent",time.time() - u1)
+
+b = 4
+a = 1 if b <=6 else 5
+print(a)
