@@ -1,7 +1,7 @@
-_# !/usr/bin/env python
+# !/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-from .mongo import LaGouDateStore
+from .mongo import DateStore
 
 
 

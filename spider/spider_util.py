@@ -110,16 +110,17 @@ class LaGou_Spider(Spider):
         # 获取数据量
         self.__get_num_page()
         for pn in range(self.numpage // 15 + 1):
-
+            print("-----LoGou spider request ",pn)
             r = self._get_index_jobs_list(pn)
             self._parse_index_data(r)
-            self._parse_detail_data()
+        self._parse_detail_data()
         logger.info(succeed_format.format(
             self.keyword,
             self.city,
             self.employment_type,
             spider='LaGou_spider',
         ))
+        return True
 
     def __init_url(self):
         # 根据是否实习和诚实构造post url
@@ -133,11 +134,10 @@ class LaGou_Spider(Spider):
             url = base + "&city={0}".format(self.city)
         self.post_url = url
 
-   
     def __get_num_page(self):
         res = self._get_index_jobs_list()
         number = res['content']['positionResult']['totalCount']
-        self.numpage = number if number < 1000 else 1000
+        self.numpage = number if number < 300 else 300
 
     def _get_index_jobs_list(self, pn=1):
         """post请求url,返回json格式数据,如果返回正确结果,则继续解析数据;"""
@@ -165,16 +165,18 @@ class LaGou_Spider(Spider):
             for r in result:
                 self.__positionId.append(r['positionId'])
                 self._jobs_info_list.append(
-                    'salary': r['salary'],
-                    'workYear': r['workYear'],
-                    'education': r['education'],
-                    'jobname': r['positionName'],
-                    'company_type': r['financeStage'],
-                    'company_size': r['companySize'],
-                    'company_name': r['companyFullName'],
-                    'company_url': , company_url.format(r['companyId']),
-                    'position_url': potstion_url.format(r['companyId']),
-                    'companyLogo': com_logo_url.format(r['companyLogo']),
+                    {   'city': r['city'],
+                        'salary': r['salary'],
+                        'workyear': r['workYear'],
+                        'Education': r['education'],
+                        'jobname': r['positionName'],
+                        'companytype': r['financeStage'],
+                        'companysize': r['companySize'],
+                        'companyname': r['companyFullName'],
+                        'companyurl': company_url.format(r['companyId']),
+                        'positionurl': potstion_url.format(r['companyId']),
+                        'companylogo': com_logo_url.format(r['companyLogo']),
+                    }
                 )
         except KeyError as e:
             logger.error("Lagou_Spider _parse_index_data failed ", e)
@@ -199,7 +201,7 @@ class LaGou_Spider(Spider):
             for html in html_list:
                 selector = etree.HTML(html.text)
                 r = selector.xpath('//*[@id="job_detail"]/dd[2]/div/p/text()')
-                self._jobs_limit_list.append(dict(data=r))
+                self._jobs_limit_list.append(dict(where_from='lagou',data=r))
         except KeyError as e:
             logger.error("Lagou_Spider __get_detail_data failed ", e)
             pass
@@ -230,14 +232,18 @@ class ZhiLian_Spdier(Spider):
         # 确定页数
         self._get_num_page()
         for page in range(self.numfound // 60 + 1):
+            print("-----Zhilian spider request ",page)
             # 根据输入的页数,进行请求,并返回json结果
             r = self._get_index_jobs_list(page)
             if r is not None:
+
                 # 如果数据不为空,解析数据,并返回没一个职位的url,再进行异步请求
                 urls_list = self._parse_index_data(r)
                 html_list = self._grequests_urls(urls_list)
+
                 # 解析其中的职位要求
                 self._parse_detail_html(html_list)
+
         # 记录日志
         logger.info(succeed_format.format(
             self.keyword,
@@ -261,7 +267,7 @@ class ZhiLian_Spdier(Spider):
     def _get_num_page(self):
         res = self._get_index_jobs_list()
         number = res['data']['numFound']
-        self.numfound = number if number <= 2000 else 2000
+        self.numfound = number if number <= 500 else 500
 
     def _get_index_jobs_list(self, page=0):
         # 使用POST方法请求
@@ -290,20 +296,20 @@ class ZhiLian_Spdier(Spider):
         jobs_results_list = r_json['data']['results']
         try:
             for job_info in jobs_results_list:
-            url = job_info['positionURL']
-            jobs_url_list.append(url)
-            self._jobs_info_list.append({
-                'position_url': url,
-                'salary': job_info['salary'],
-                'jobname': job_info['jobName'],
-                'city': job_info['city']['display'],
-                'education': job_info['eduLevel']['name'],
-                'company_name': job_info['company']['name'],
-                'company_url': job_info['company']['url'],
-                'company_size': job_info['company']['size']['name']
-                'company_type': job_info['company']['type']['name']
-                'workYear': job_info['workingExp']['name']
-            })
+                url = job_info['positionURL']
+                jobs_url_list.append(url)
+                self._jobs_info_list.append({
+                    'positionurl': url,
+                    'salary': job_info['salary'],
+                    'jobname': job_info['jobName'],
+                    'city': job_info['city']['display'],
+                    'education': job_info['eduLevel']['name'],
+                    'companyname': job_info['company']['name'],
+                    'companyurl': job_info['company']['url'],
+                    'companysize': job_info['company']['size']['name'],
+                    'companytype': job_info['company']['type']['name'],
+                    'workyear': job_info['workingExp']['name']
+                })
         except KeyError as e:
             logger.error(
                 "ZhiLian_Spider _parse_index_data failed {0}".format(e))
@@ -318,7 +324,7 @@ class ZhiLian_Spdier(Spider):
             for x_str in self.xpath_list:
                 r = selector.xpath(x_str)
                 if len(r) != 0:
-                    self._jobs_limit_list.append(dict(data=r))
+                    self._jobs_limit_list.append(dict(where_from='zhilian',data=r))
                     break
         return True
 
@@ -341,7 +347,7 @@ class ShiXi_Spider(Spider):
         urls_list = self._parse_index_data(html_list)
 
         if urls_list is not None:
-
+            print("-------shixi spider request url_list")
             # 列表非空,使用异步请求,返回一个html的列表
             html_list = self._grequests_urls(urls_list)
 
@@ -416,15 +422,15 @@ class ShiXi_Spider(Spider):
                 reg = r'"bdPic":"(.*?)"'
                 com_logo = re.findall(reg, html.text)[0]
                 self._jobs_info_list.append({
-                    'company_name': job_com_name,
-                    'company_url': com_base_url + job_com_url,
-                    'position_url': base_url + job_url,
+                    'companyname': job_com_name,
+                    'companyurl': com_base_url + job_com_url,
+                    'positionurl': base_url + job_url,
                     'jobname': job_name,
                     'city': job_city,
                     'education': job_edu,
-                    'companyLogo': com_logo
+                    'companylogo': com_logo
                 })
-                self._jobs_limit_list.append(dict(data=limit))
+                self._jobs_limit_list.append(dict(where_from='shixi',data=limit))
             except Exception as e:
                 logger.error("ShiXiSeng_spider parse html {0}".format(e))
                 pass
