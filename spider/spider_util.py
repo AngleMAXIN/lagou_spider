@@ -9,6 +9,7 @@ import time
 import grequests
 import requests
 from gevent import monkey
+import multiprocessing
 from lxml import etree
 
 from .config import get_header, post_header, get_cookie, succeed_format
@@ -91,6 +92,7 @@ class LaGou_Spider(Spider):
     """
     spider of LaGou
     """
+    name = "lagou_spider"
     SLEEP_TIME = [1, 2, 14, 4, 5, 5.5, 11, 8, 11, 10, 9, 7, 6]
 
     # spider_live = True
@@ -100,6 +102,7 @@ class LaGou_Spider(Spider):
         # self.keyword = keyword
         # self.cities = citiesn
         # self.work_year = work_year
+        self.__job_number = 0
         self.numpage = 1
         self.post_url = ""
         self.__positionId = []
@@ -110,9 +113,10 @@ class LaGou_Spider(Spider):
         # 获取数据量
         self.__get_num_page()
         for pn in range(self.numpage // 15 + 1):
-            print("-----LoGou spider request ",pn)
+            print("-----LoGou spider request ", pn)
             r = self._get_index_jobs_list(pn)
-            self._parse_index_data(r)
+            if r is not None:
+                self._parse_index_data(r)
         self._parse_detail_data()
         logger.info(succeed_format.format(
             self.keyword,
@@ -136,23 +140,36 @@ class LaGou_Spider(Spider):
 
     def __get_num_page(self):
         res = self._get_index_jobs_list()
-        number = res['content']['positionResult']['totalCount']
-        self.numpage = number if number < 300 else 300
+        try:
+            number = res['content']['positionResult']['totalCount']
+        except KeyError as e:
+            logger.warning(
+                "parse number happend keyerror")
+        else:
+            self.__job_number = number
+            self.numpage = number if number < 300 else 40
 
     def _get_index_jobs_list(self, pn=1):
         """post请求url,返回json格式数据,如果返回正确结果,则继续解析数据;"""
         OVER = 3
         data = {'first': 'true', 'pn': pn, 'kd': self.keyword}
         while OVER > 0:
-            result = requests.post(
-                self.post_url, data=data, headers=post_header()).json()
-            OVER -= 1
-            time.sleep(random.choice(self.SLEEP_TIME))
-            if result['success'] is True:
-                return result
-            else:
+            try:
+                result = requests.post(
+                    self.post_url, data=data, headers=post_header()).json()
+                OVER -= 1
+                time.sleep(random.choice(self.SLEEP_TIME))
+            except requests.exceptions.ConnectionError as e:
+                print("------- requests.exceptions.ConnectionError ------")
                 logger.warning(
-                    "LaGou_Spider request failed at page {0}".format(pn))
+                    "LaGou_Spider request failed at page {0}".format("ConnectionError"))
+            else:
+                if result['success'] is True:
+                    return result
+                else:
+                    logger.warning(
+                        "LaGou_Spider request failed at page {0}".format(pn))
+        return None
 
     def _parse_index_data(self, data):
         # 解析json数据,获取每一个职位的url_id,以及每一个职位的信息
@@ -165,7 +182,7 @@ class LaGou_Spider(Spider):
             for r in result:
                 self.__positionId.append(r['positionId'])
                 self._jobs_info_list.append(
-                    {   'city': r['city'],
+                    {'city': r['city'],
                         'salary': r['salary'],
                         'workyear': r['workYear'],
                         'Education': r['education'],
@@ -176,42 +193,75 @@ class LaGou_Spider(Spider):
                         'companyurl': company_url.format(r['companyId']),
                         'positionurl': potstion_url.format(r['companyId']),
                         'companylogo': com_logo_url.format(r['companyLogo']),
-                    }
+                     }
                 )
         except KeyError as e:
             logger.error("Lagou_Spider _parse_index_data failed ", e)
 
-    def _get_detail_html(self, url_list):
-        html_list = []
-        for url in url_list:
-            html = requests.get(url, headers=get_header, cookies=get_cookie)
-            if html.status_code == 200:
-                html_list.append(html)
-        return html_list
+    # def _get_detail_html(self, url_list):
+    #     html_list = []
+    #     for url in url_list:
+    #         html = requests.get(url, headers=get_header, cookies=get_cookie)
+    #         if html.status_code == 200:
+    #             html_list.append(html)
+    #     return html_list
 
     def _parse_detail_data(self):
         url_list = []
         for id in self.__positionId:
             url = "https://www.lagou.com/jobs/{0}.html".format(str(id))
             url_list.append(url)
-        # print(url_list)
-        html_list = self._get_detail_html(url_list)
-
+        # l = len(url_list) // 3
+        html_list = self._grequests_urls(url_list)
         try:
             for html in html_list:
                 selector = etree.HTML(html.text)
                 r = selector.xpath('//*[@id="job_detail"]/dd[2]/div/p/text()')
-                self._jobs_limit_list.append(dict(where_from='lagou',data=r))
+                self._jobs_limit_list.append(dict(where_from='lagou', data=r))
         except KeyError as e:
             logger.error("Lagou_Spider __get_detail_data failed ", e)
             pass
         return None
+        # seconds_html_list = self._grequests_urls(url_list[l:2*l])
+        # third_html_list = self._grequests_urls(url_list[21:])
+        # return one_html_list, seconds_html_list, third_html_list
+
+    # def __parse_deal_html(jobs_limit_list, html_list):
+    #     print("----id-----",id(html_list))
+    #     try:
+    #         for html in html_list:
+    #             selector = etree.HTML(html.text)
+    #             r = selector.xpath('//*[@id="job_detail"]/dd[2]/div/p/text()')
+    #             jobs_limit_list.append(dict(where_from='lagou', data=r))
+    #         return jobs_limit_list
+    #     except KeyError as e:
+    #         logger.error("Lagou_Spider __get_detail_data failed ", e)
+    #         pass
+    #     return None
+
+    def _multiprocess_deal_html(self):
+        tasks = self._parse_detail_data()
+        process_pool = multiprocessing.Pool(processes=2)
+        jobs_limit_list = multiprocessing.Manager().list([])
+        for task in tasks:
+            print("----=====-----")
+            process_pool.apply_async(
+                self.__parse_deal_html, (jobs_limit_list, task,))
+        process_pool.close()
+        process_pool.join()
+
+        return jobs_limit_list
+
+    @property
+    def _get_job_number(self):
+        return self.__job_number
 
 
 class ZhiLian_Spdier(Spider):
     """
     spider of zhilian
     """
+    name = "zhilian_spider"
 
     def __init__(self, keyword='', cityId=530, employment_type=-1):
         # 530默认北京
@@ -232,7 +282,7 @@ class ZhiLian_Spdier(Spider):
         # 确定页数
         self._get_num_page()
         for page in range(self.numfound // 60 + 1):
-            print("-----Zhilian spider request ",page)
+            print("-----Zhilian spider request ", page)
             # 根据输入的页数,进行请求,并返回json结果
             r = self._get_index_jobs_list(page)
             if r is not None:
@@ -324,7 +374,8 @@ class ZhiLian_Spdier(Spider):
             for x_str in self.xpath_list:
                 r = selector.xpath(x_str)
                 if len(r) != 0:
-                    self._jobs_limit_list.append(dict(where_from='zhilian',data=r))
+                    self._jobs_limit_list.append(
+                        dict(where_from='zhilian', data=r))
                     break
         return True
 
@@ -333,6 +384,7 @@ class ShiXi_Spider(Spider):
     """
     Spider about Shixiseng
     """
+    name = "shixi_spider"
 
     def __init__(self, keyword='', city='', employment_type='实习'):
         super().__init__(keyword, city, employment_type)
@@ -364,11 +416,12 @@ class ShiXi_Spider(Spider):
                     spider='Shixi_spider',
                 ))
                 return True
+        return False
 
     def __init_urls(self):
         # 根据城市和关键字构造baseurl,最后通过列表推导式,生成完整的url列表
         city_dict = {
-            "不限": "",
+            "全国": "",
             "北京": "110100",
             "上海": "310100",
             "广州": "440100",
@@ -430,7 +483,8 @@ class ShiXi_Spider(Spider):
                     'education': job_edu,
                     'companylogo': com_logo
                 })
-                self._jobs_limit_list.append(dict(where_from='shixi',data=limit))
+                self._jobs_limit_list.append(
+                    dict(where_from='shixi', data=limit))
             except Exception as e:
                 logger.error("ShiXiSeng_spider parse html {0}".format(e))
                 pass

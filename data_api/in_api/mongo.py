@@ -64,7 +64,7 @@ class DateStore(object):
     def let_save(self, job_doc, request_doc):
         # self.__save_keywords(self.coll_name)
         try:
-            print("-----start ave to mongo-----")
+            print("-----start save to mongo-----")
             gevent.joinall([
                 gevent.spawn(self._save_job, job_doc),
                 gevent.spawn(self._save_requests, request_doc)
