@@ -1,11 +1,11 @@
 package dbops
 
 import (
-	_ "encoding/json"
-	"fmt"
+	"Project/flyjob/data_api/out/defs"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"Project/websocket/defs"
+	"log"
 )
 
 var (
@@ -13,23 +13,27 @@ var (
 )
 
 func init() {
-	session, err := mgo_v2.Dial(defs.MongoUrl)
+	var err error
+	session, err = mgo_v2.Dial(defs.MongoUrl)
 	if err != nil {
 		panic(err)
 	}
 	session.SetMode(mgo_v2.Monotonic, true)
 }
 
-func GetJobsInfoList(collection, city, salary string) defs.ResultList {
+func GetJobsInfoList(ReqBody *defs.JobsRequestBody) (*defs.ResultList, error) {
+
 	var results defs.ResultList
+	s := session.Copy()
+	defer s.Close()
+	//defer session.Close()
+	c := s.DB(defs.JobsInfoDB).C(ReqBody.JobType + ReqBody.Keyword)
+	err := c.Find(bson.M{"salary": ReqBody.Salary, "city": ReqBody.City}).All(&results.JobsInfoList)
 
-	defer session.Close()
-	c := session.DB(defs.JobsInfoDB).C(collection)
-
-	err := c.Find(bson.M{"salary": salary, "city": city}).All(&results.JobsInfoList)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
+		return nil, err
 	}
 	results.JobsCount = len(results.JobsInfoList)
-	return results
+	return &results, nil
 }

@@ -6,6 +6,7 @@ const (
 	//JobsLimitDB = "jobs_limit"
 )
 
+//职位请求体
 type JobsRequestBody struct {
 	Keyword string `json:"key_word"`
 	Salary  string `json:"salary"`
@@ -13,11 +14,13 @@ type JobsRequestBody struct {
 	City    string `json:"city"`
 }
 
+//职位返回体
 type ResultList struct {
-	JobsInfoList []JobInfo
-	JobsCount    int
+	JobsInfoList []JobInfo `json:"jobs_info_list"`
+	JobsCount    int       `json:"jobs_count"`
 }
 
+//职位列表
 type JobInfo struct {
 	//_Id          string
 	JobName     string `json:"job_name"`

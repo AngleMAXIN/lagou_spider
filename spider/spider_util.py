@@ -15,7 +15,7 @@ from lxml import etree
 from .config import get_header, post_header, get_cookie, succeed_format
 from .log import logger
 
-monkey.patch_all()
+# monkey.patch_all()
 
 
 class Spider(object):
@@ -147,7 +147,7 @@ class LaGou_Spider(Spider):
                 "parse number happend keyerror")
         else:
             self.__job_number = number
-            self.numpage = number if number < 300 else 40
+            self.numpage = number if number < 300 else 300
 
     def _get_index_jobs_list(self, pn=1):
         """post请求url,返回json格式数据,如果返回正确结果,则继续解析数据;"""

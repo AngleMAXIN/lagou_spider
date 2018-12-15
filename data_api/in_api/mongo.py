@@ -48,7 +48,7 @@ class DateStore(object):
         if number == 0:
             return False
         for job in job_doc:
-            self.jobs_info_coll.insert(job)
+                self.jobs_info_coll.insert(job)
         logger.info("succeed inserty job info {0}:{1}:{2} number:{3}".format(
             self.coll_name, self.city, self.emp_type, number))
 
@@ -74,12 +74,3 @@ class DateStore(object):
             pass
         else:
             return True
-
-
-#
-# if __name__ == '__main__':
-#     key = ['python', 'java', "C++","PHP", "docker","golang","web前端"]
-#     city = "全国"
-#     gx = "不限"
-#     for k in key:
-#         ex = DateStore(k,gx,city)
