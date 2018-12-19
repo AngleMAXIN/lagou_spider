@@ -27,9 +27,10 @@ func GetJobsInfoList(ReqBody *defs.JobsRequestBody) (*defs.ResultList, error) {
 	s := session.Copy()
 	defer s.Close()
 	//defer session.Close()
+	//log.Println(ReqBody.Salary,ReqBody.City)
 	c := s.DB(defs.JobsInfoDB).C(ReqBody.JobType + ReqBody.Keyword)
 	err := c.Find(bson.M{"salary": ReqBody.Salary, "city": ReqBody.City}).All(&results.JobsInfoList)
-
+	//log.Println(results.JobsInfoList,c.Name,)
 	if err != nil {
 		log.Println(err)
 		return nil, err

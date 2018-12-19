@@ -10,6 +10,8 @@ import (
 func SendErrorResponse(w http.ResponseWriter, errResp defs.ErrorResponse) {
 
 	w.WriteHeader(errResp.HttpSC)
+	//w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	resStr, _ := json.Marshal(&errResp.Error)
 	io.WriteString(w, string(resStr))
 

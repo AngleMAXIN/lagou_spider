@@ -25,6 +25,7 @@ type JobInfo struct {
 	//_Id          string
 	JobName     string `json:"job_name"`
 	Salary      string `json:"salary"`
+	City        string `json:"city"`
 	WorkYear    string `json:"work_year"`
 	Education   string `json:"education"`
 	CompanyName string `json:"company_name"`
