@@ -145,6 +145,9 @@ class LaGou_Spider(Spider):
         except KeyError as e:
             logger.warning(
                 "parse number happend keyerror")
+        except TypeError as e:
+            logger.warning(
+                "parse number happend Typeerror")
         else:
             self.__job_number = number
             self.numpage = number if number < 300 else 300
@@ -182,7 +185,8 @@ class LaGou_Spider(Spider):
             for r in result:
                 self.__positionId.append(r['positionId'])
                 self._jobs_info_list.append(
-                    {'city': r['city'],
+                    {
+                        'city': r['city'],
                         'salary': r['salary'],
                         'workyear': r['workYear'],
                         'Education': r['education'],
@@ -359,6 +363,7 @@ class ZhiLian_Spdier(Spider):
                     'companysize': job_info['company']['size']['name'],
                     'companytype': job_info['company']['type']['name'],
                     'workyear': job_info['workingExp']['name']
+                    'companylogo':'',
                 })
         except KeyError as e:
             logger.error(
@@ -370,6 +375,8 @@ class ZhiLian_Spdier(Spider):
     def _parse_detail_html(self, html_list):
         # 使用xpath对html进行解析
         for html in html_list:
+            if html is None:
+                pass
             selector = etree.HTML(html.text)
             for x_str in self.xpath_list:
                 r = selector.xpath(x_str)
@@ -482,6 +489,7 @@ class ShiXi_Spider(Spider):
                     'city': job_city,
                     'education': job_edu,
                     'companylogo': com_logo
+                    'salary':"0",
                 })
                 self._jobs_limit_list.append(
                     dict(where_from='shixi', data=limit))

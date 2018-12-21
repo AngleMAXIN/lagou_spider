@@ -65,8 +65,7 @@ if __name__ == '__main__':
     # keyword = input("input your keyword:")
     # city = input("input your ares:")
     # emplo_type = input("input your emploment type:")
-    keyword = "Ruby"
+    keyword = "Python"
     city = "全国"
-    emplo_type = "不限"
+    emplo_type = "实习"
     spider_start(keyword, city, emplo_type)
-    print('sub thread start!the thread name is:%s\r' % currentThread())
