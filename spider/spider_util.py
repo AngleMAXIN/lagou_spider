@@ -362,8 +362,8 @@ class ZhiLian_Spdier(Spider):
                     'companyurl': job_info['company']['url'],
                     'companysize': job_info['company']['size']['name'],
                     'companytype': job_info['company']['type']['name'],
-                    'workyear': job_info['workingExp']['name']
-                    'companylogo':'',
+                    'workyear': job_info['workingExp']['name'],
+                    'companylogo':"",
                 })
         except KeyError as e:
             logger.error(
@@ -488,7 +488,7 @@ class ShiXi_Spider(Spider):
                     'jobname': job_name,
                     'city': job_city,
                     'education': job_edu,
-                    'companylogo': com_logo
+                    'companylogo': com_logo,
                     'salary':"0",
                 })
                 self._jobs_limit_list.append(

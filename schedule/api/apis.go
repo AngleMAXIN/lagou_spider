@@ -11,13 +11,13 @@ import (
 )
 
 type JobInfo struct {
-	Salary string `json:"salary"`
-	_Id    string `json:"id"`
+	Salary string        `json:"salary"`
+	Id     bson.ObjectId `bson:"_id"`
 }
 
 var (
 	session   *mgo_v2.Session
-	salaryRe  = regexp.MustCompile(`([0-9]+)K-([0-9]+)K`)
+	salaryRe  = regexp.MustCompile(`([0-9]+)[k|K]-([0-9]+)[k|K]`)
 	ChangeKey []JobInfo
 )
 
@@ -38,54 +38,80 @@ func getAllCollections() []string {
 	return c1
 }
 
-func GetJobsInfoList(CollName string) (*[]JobInfo, error) {
+func GetJobsInfoList(CollName string, field string, exist int) (*[]JobInfo, error) {
 
 	//var results defs.ResultList
 	s := session.Copy()
 	defer s.Close()
 
 	c := s.DB(defs.JobsInfoDB).C(CollName)
-	err := c.Find(bson.M{"salary": bson.M{"$exists": 1}}).All(&ChangeKey)
-	// fmt.Println(c, ChangeKey)
+	err := c.Find(bson.M{field: bson.M{"$exists": exist}}).All(&ChangeKey)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	//results.JobsCount = len(ChangeKey)
 	return &ChangeKey, nil
 }
 
-func task(datalist *[]JobInfo) {
-	var start int
-	var end int
-	var err error
+func AddComLogoTask(datalist *[]JobInfo, coll string){
+	s := session.Copy()
+	defer s.Close()
+
+	c := s.DB(defs.JobsInfoDB).C(coll)
+}
+
+func AddTagTask(datalist *[]JobInfo, coll string) {
+	var (
+		start int
+		end   int
+		err   error
+		updata = bson.M{}
+	)
+
+	s := session.Copy()
+	defer s.Close()
+
+	c := s.DB(defs.JobsInfoDB).C(coll)
+
 	for _, data := range *datalist {
-		all := salaryRe.FindAllSubmatch([]byte(data.Salary), -1)
-		for _, m := range all {
-			// fmt.Println(string(m))
-			start,err = strconv.Atoi(string(m[1]))
-			if err != nil {
-				log.Println(err)
+		selector := bson.M{"_id": data.Id}
+
+		if data.Salary == "薪资面议" || data.Salary == "校招" {
+			updata = bson.M{"$set": bson.M{"tag": 0}}
+		} else {
+
+			all := salaryRe.FindAllSubmatch([]byte(data.Salary), -1)
+
+			for _, m := range all {
+
+				start, err = strconv.Atoi(string(m[1]))
+				if err != nil {
+					log.Println(err)
+				}
+				end, err = strconv.Atoi(string(m[2]))
+				if err != nil {
+					log.Println(err)
+				}
+				updata = bson.M{"$set": bson.M{"tag": (end + start) / 2}}
 			}
-			end, err = strconv.Atoi(string(m[2]))
-			if err != nil {
-				log.Println(err)
-			}
-			fmt.Printf("%sK - %sK ---> %d\n",string(m[1]),string(m[2]),(end + start) / 2)
+		}
+		err = c.Update(selector, updata)
+		if err != nil {
+			log.Println(err)
 		}
 	}
 }
 
 func main() {
 	collections := getAllCollections()
-	for _, coll := range collections[:2] {
-		resultList, e := GetJobsInfoList(coll)
-		// fmt.Println(resultList)
+	field := "companylogo" 
+	exist := 0
+	for _, coll := range collections {
+		resultList, e := GetJobsInfoList(coll,field,exist)
 		if e != nil {
 			log.Println(e)
 		}
-		// fmt.Println("----")
-		task(resultList)
+		AddTagTask(resultList, coll)
 	}
 
 }
