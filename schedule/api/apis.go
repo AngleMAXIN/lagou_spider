@@ -53,18 +53,19 @@ func GetJobsInfoList(CollName string, field string, exist int) (*[]JobInfo, erro
 	return &ChangeKey, nil
 }
 
-func AddComLogoTask(datalist *[]JobInfo, coll string){
+func AddComLogoTask(datalist *[]JobInfo, coll string) {
 	s := session.Copy()
 	defer s.Close()
 
 	c := s.DB(defs.JobsInfoDB).C(coll)
+
 }
 
 func AddTagTask(datalist *[]JobInfo, coll string) {
 	var (
-		start int
-		end   int
-		err   error
+		start  int
+		end    int
+		err    error
 		updata = bson.M{}
 	)
 
@@ -104,10 +105,10 @@ func AddTagTask(datalist *[]JobInfo, coll string) {
 
 func main() {
 	collections := getAllCollections()
-	field := "companylogo" 
+	field := "companylogo"
 	exist := 0
 	for _, coll := range collections {
-		resultList, e := GetJobsInfoList(coll,field,exist)
+		resultList, e := GetJobsInfoList(coll, field, exist)
 		if e != nil {
 			log.Println(e)
 		}

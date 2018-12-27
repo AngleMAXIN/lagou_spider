@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Project/flyjob/data_api/out/defs"
+	"Project/flyjob/web/defs"
 	"encoding/json"
 	"io"
 	"net/http"

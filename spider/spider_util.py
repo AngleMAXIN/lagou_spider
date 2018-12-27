@@ -189,7 +189,7 @@ class LaGou_Spider(Spider):
                         'city': r['city'],
                         'salary': r['salary'],
                         'workyear': r['workYear'],
-                        'Education': r['education'],
+                        'education': r['education'],
                         'jobname': r['positionName'],
                         'companytype': r['financeStage'],
                         'companysize': r['companySize'],

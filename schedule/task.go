@@ -7,5 +7,5 @@ package main
 // 2. 没有公司logo的默认添加flyjob logo
 
 func main() {
-	
+
 }

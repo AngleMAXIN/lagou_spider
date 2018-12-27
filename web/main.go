@@ -1,17 +1,17 @@
 package main
 
 import (
-		"github.com/julienschmidt/httprouter"
+	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
 
 func RegisterHandlers() *httprouter.Router {
 	router := httprouter.New()
 
-	router.GET("/",HomeHandler)
-	router.POST("/api_v1/jobs", GetJobsInfoHandler)
+	router.GET("/", HomeHandler)
+	router.POST("/api-v1/jobs?pn=:page", GetJobsInfoHandler)
 
-	router.ServeFiles("/statics/*filepath",http.Dir("./templates"))
+	router.ServeFiles("/statics/*filepath", http.Dir("../templates"))
 	return router
 }
 
