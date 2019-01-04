@@ -3,7 +3,7 @@ package dbops
 import (
 	"Project/flyjob/data_api/out/defs"
 
-	defs2 "Project/flyjob/web/defs"
+	webdefs "Project/flyjob/web/defs"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"log"
@@ -38,7 +38,7 @@ func GetKeyWord() ([]defs.Keys, error) {
 	return KeyWordList, nil
 }
 
-func GetJobsInfoList(ReqBody *defs2.JobsRequestBody) (*defs.ResultList, error) {
+func GetJobsInfoList(ReqBody *webdefs.JobsRequestBody) (*defs.ResultList, error) {
 	s := session.Copy()
 	defer s.Close()
 
@@ -50,20 +50,24 @@ func GetJobsInfoList(ReqBody *defs2.JobsRequestBody) (*defs.ResultList, error) {
 		Queryapi["city"] = ReqBody.City
 
 	}
+
 	if len(ReqBody.Salary) == 0 {
 		Queryapi["salary"] = bson.M{"$exists": 1}
 
 	} else {
-		//  ReqBody.Salary[0] <= salary < ReqBody.Salary[1]
 		Queryapi["tag"] = bson.M{"$gte": ReqBody.Salary[0], "$lt": ReqBody.Salary[1]}
 	}
-	log.Println("Query:",Queryapi)
-	err = c.Find(Queryapi).Limit(9).All(&results.JobsInfoList)
+	log.Println("Query:", Queryapi)
+	QueryResult := c.Find(Queryapi)
+	results.JobsCount, err = QueryResult.Count()
+	if err != nil {
+		log.Println(err)
+	}
+	QueryResult.Skip(0 * 9).Limit(9).Sort("_id").All(&results.JobsInfoList)
 
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	results.JobsCount = len(results.JobsInfoList)
 	return &results, nil
 }

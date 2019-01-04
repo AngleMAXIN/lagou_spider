@@ -9,7 +9,7 @@ import (
 	"html/template"
 	"io/ioutil"
 	"log"
-	"strconv"
+	//"strconv"
 	"net/http"
 )
 
@@ -42,11 +42,11 @@ func HomeHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 }
 func GetJobsInfoHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	page,err := strconv.Atoi(p.ByName("page"))
-	if err != nil {
-		SendErrorResponse(w, defs.ErrorRequestBodyParseFailed)
-		return
-	}
+	//page,err := strconv.Atoi(p.ByName("page"))
+	// if err != nil {
+	// 	SendErrorResponse(w, defs.ErrorRequestBodyParseFailed)
+	// 	return
+	// }
 	res, _ := ioutil.ReadAll(r.Body)
 
 	// 解析json数据到结构体，出错则返回
@@ -57,7 +57,7 @@ func GetJobsInfoHandler(w http.ResponseWriter, r *http.Request, p httprouter.Par
 	}
 
 	// 根据请求数据创建用户，出错则返回
-	results, err := dbops.GetJobsInfoList(ubody,page)
+	results, err := dbops.GetJobsInfoList(ubody)
 	if err != nil {
 		SendErrorResponse(w, defs.ErrorDBError)
 		return

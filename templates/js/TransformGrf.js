@@ -1,78 +1,73 @@
-var temp = false;
+    var allpage;
+    var requestData;
+    var rec;
+    var url
+    //点击搜索后显示第一页查询结局
+    //此时定义全局变量 pagereco(推荐时页码) 和 pageation （筛选时页码） 以及 allpage （总页数）来判断
+    var temp = false;
+    var pagination = 1; // filter
+    var pagereco = 0; //recommendPage
 
-var rec = document.getElementsByName("Recommendjob");
+    var salarys = {
+        "不限": [],
+        "5K": [0, 5],
+        "5K-10K": [5, 10],
+        "10K-18K": [10, 18],
+        "18K-25K": [18, 25],
+        "25K以上": [15, 40],
 
-for (var i = 1; i < rec.length; i++) {
-    rec[i].style.display = "none";
-}
-//点击搜索后显示第一页查询结局
-//此时定义全局变量 pagereco(推荐时页码) 和 pageation （筛选时页码） 以及 allpage （总页数）来判断
-
-var pagination = 1; // filter
-var pagereco = 0;  //recommendPage
-var allpage;
-var requestData;
-var salarys = {
-    "不限": [],
-    "5K": [0, 5],
-    "5K-10K": [5, 10],
-    "10K-18K": [10, 18],
-    "18K-25K": [18, 25],
-    "25K以上": [15, 40],
-
-}
-function selectAjex() {
-    var selectItem = document.getElementsByTagName("select");
-    if (selectItem[0].value != "keyword" || selectItem[1].value != "city" || selectItem[2].value != "salary" || selectItem[3].value != "jobtype") {
-        var jobtype = "fw";
-        var salary = salarys[selectItem[2].value];
-        if (selectItem[3].value == "不限") {
-            jobtype = "";
-        }
-        requestData = {
-            "key_word": selectItem[0].value,
-            "city": selectItem[1].value,
-            "salary": salary,
-            "job_type": jobtype
-        };
-
-        temp = true;
-        rec[0].style.display = "none";
-
-        var OldjJobs = document.getElementsByName("blank");
-
-        for (var i = 0; i < OldjJobs.length; i++) {
-            OldjJobs[i].style.display = "none";
-        }
-
-        for (var i = 1; i < rec.length; i++) {
-            rec[i].style.display = "inline";
-        }
-
-        pagereco = 1;//进入筛选阶段
-    }
-    else {
-        alert("请至少选择一项！");
     }
 
-    if (temp) {
+    function selectAjex() {
+        // hide old title and jobs info
+        Hidititle();
+        hidiOldJobsInfo();
+        var selectItem = document.getElementsByTagName("select");
+        if (selectItem[0].value != "keyword" || selectItem[1].value != "city" ||
+            selectItem[2].value != "salary" || selectItem[3].value != "jobtype") {
+            
+            var jobtype = "fw";
+            var salary = salarys[selectItem[2].value];
+
+            if (selectItem[3].value == "不限") {
+                jobtype = "";
+            }
+            requestData = {
+                "key_word": selectItem[0].value,
+                "city": selectItem[1].value,
+                "salary": salary,
+                "job_type": jobtype
+            };
+
+            temp = true;
+            rec[0].style.display = "none";
 
 
-        var url = "http://127.0.0.1:8080/api_v1/jobs";
-        $.ajax({
+            for (var i = 1; i < rec.length; i++) {
+                rec[i].style.display = "inline";
+            }
+
+            pagereco = 1; //进入筛选阶段
+        } else {
+            alert("请至少选择一项！");
+        }
+
+        if (temp) {
+
+            url = "http://127.0.0.1:8080/api-v1/jobs?pn=" + pagereco;
+            $.ajax({
                 type: 'POST',
                 url: url,
                 data: JSON.stringify(requestData),
                 dataType: 'json',
-                success: function (data) {
+                success: function(data) {
                     console.log(data);
                     var number = data["jobs_count"];
-                    if (number === 0)
-                    {
+                    if (number === 0) {
                         alert("没有你查找的数据！");
                         return;
                     }
-                    allpage = (number % 9) + 1;//赋值筛选结果总页数
+                    allpage = (number % 9) + 1; //赋值筛选结果总页数
 
                     var data_list = data["jobs_info_list"];
 
@@ -97,51 +92,61 @@ function selectAjex() {
                         $(".Blank").append(html_text);
                     }
                 }
-            }
-        )
+            })
+        }
+
     }
 
-}
+    // hidi jobs info title
+    function Hidititle() {
+        alert("清空job列表");
+        rec = document.getElementsByName("Recommendjob");
 
-// 点击翻页按钮之后显示查询结果
-function selectajex(action) {
-    if (action == 'last') {
-        if (pagereco == 0)//筛选页数为0即还是显示推荐职业
-        {
-            if (pagination == 1)//推荐页数是第一页
+        for (var i = 1; i < rec.length; i++) {
+            rec[i].style.display = "none";
+        }
+    }
+
+    //hide jobs info list before reload new jobs list
+    function hidiOldJobsInfo() {
+        var OldjJobs = document.getElementsByName("blank");
+        for (var i = 0; i < OldjJobs.length; i++) {
+            OldjJobs[i].style.display = "none";
+        }
+    }
+    // 点击翻页按钮之后显示查询结果
+    function checkPage(action) {
+        if (action == 'last') {
+            if (pagereco == 0) //筛选页数为0即还是显示推荐职业
+            {
+                if (pagination == 1) //推荐页数是第一页
+                {
+                    alert("已经是第一页了！");
+                } else
+                    // 返回上一页数据
+                    pagination--;
+            } else if (pagereco == 1) //筛选页数是第一页
             {
                 alert("已经是第一页了！");
-            }
-            else
-            // 返回上一页数据
-                pagination--;
+            } else
+                // 返回上一页数据
+                pagereco--;
         }
-        else if (pagereco == 1)//筛选页数是第一页
-        {
-            alert("已经是第一页了！");
-        }
-        else
-        // 返回上一页数据
-            pagereco--;
-    }
-    if (action == 'next') {
-        if (pagereco == 0)//筛选页数为0即还是显示推荐职业
-        {
-            if (pagination == 3)//推荐页数是第三页
+        if (action == 'next') {
+            if (pagereco == 0) //筛选页数为0即还是显示推荐职业
+            {
+                if (pagination == 3) //推荐页数是第三页
+                {
+                    alert("已经是最后一页了！");
+                } else
+                    // 返回下一页数据
+                    pagination++;
+            } else if (pagereco == allpage) //筛选页数是最后一页
             {
                 alert("已经是最后一页了！");
-            }
-            else
-            // 返回下一页数据
-                pagination++;
+            } else
+                // 返回上一页数据
+                pagereco++;
         }
-        else if (pagereco == allpage)//筛选页数是最后一页
-        {
-            alert("已经是最后一页了！");
-        }
-        else
-        // 返回上一页数据
-            pagereco++;
+        return true;
     }
-    return true;
-}

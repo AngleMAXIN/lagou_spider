@@ -3,7 +3,7 @@ package defs
 const (
 	MongoUrl         = "127.0.0.1:27017"
 	JobsInfoDB       = "jobs_info"
-	KeyWordDB = "notes"
+	KeyWordDB        = "notes"
 	KeyWordCollction = "keywords"
 	// JobsLimitDB = "jobs_limit"
 )

@@ -30,6 +30,7 @@ func init() {
 	session.SetMode(mgo_v2.Monotonic, true)
 }
 
+// get all collection name from database
 func getAllCollections() []string {
 	s := session.Copy()
 	defer s.Close()
@@ -38,6 +39,7 @@ func getAllCollections() []string {
 	return c1
 }
 
+//get some documents by field existed
 func GetJobsInfoList(CollName string, field string, exist int) (*[]JobInfo, error) {
 
 	//var results defs.ResultList
@@ -54,13 +56,24 @@ func GetJobsInfoList(CollName string, field string, exist int) (*[]JobInfo, erro
 }
 
 func AddComLogoTask(datalist *[]JobInfo, coll string) {
+
 	s := session.Copy()
 	defer s.Close()
-
 	c := s.DB(defs.JobsInfoDB).C(coll)
+
+	for i := 0; i < len(*datalist); i++ {
+		selector := bson.M{"_id": (*datalist)[i].Id}
+		updata := bson.M{"$set": bson.M{"companylogo": "/statics/img/logo.png"}}
+
+		err := c.Update(selector, updata)
+		if err != nil {
+			log.Println(err)
+		}
+	}
 
 }
 
+// add average salary
 func AddTagTask(datalist *[]JobInfo, coll string) {
 	var (
 		start  int
@@ -103,6 +116,25 @@ func AddTagTask(datalist *[]JobInfo, coll string) {
 	}
 }
 
+// add salary
+func AddSalaryTag(datalist *[]JobInfo, coll string) {
+	s := session.Copy()
+	defer s.Close()
+
+	c := s.DB(defs.JobsInfoDB).C(coll)
+
+	for _, data := range *datalist {
+
+		selector := bson.M{"_id": data.Id}
+		updata := bson.M{"$set": bson.M{"salary": "-----"}}
+
+		err := c.Update(selector, updata)
+		if err != nil {
+			log.Println(err)
+		}
+
+	}
+}
 func main() {
 	collections := getAllCollections()
 	field := "companylogo"
@@ -112,7 +144,10 @@ func main() {
 		if e != nil {
 			log.Println(e)
 		}
-		AddTagTask(resultList, coll)
+		fmt.Printf("%s start...\n", coll)
+		AddComLogoTask(resultList, coll)
+		fmt.Printf("%s end...\n", coll)
+
 	}
 
 }

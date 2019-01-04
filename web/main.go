@@ -9,16 +9,16 @@ func RegisterHandlers() *httprouter.Router {
 	router := httprouter.New()
 
 	router.GET("/", HomeHandler)
-	router.POST("/api-v1/jobs?pn=:page", GetJobsInfoHandler)
+	router.POST("/api-v1/jobs", GetJobsInfoHandler)
 
 	router.ServeFiles("/statics/*filepath", http.Dir("../templates"))
 	return router
 }
 
 func main() {
-	//	Prepare()
+	// 	Prepare()
 	// 注册路由
-	//fmt.Println("listen on 8080fef")
+	// fmt.Println("listen on 8080fef")
 	r := RegisterHandlers()
 	http.ListenAndServe(":8080", r)
 
